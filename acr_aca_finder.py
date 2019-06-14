@@ -99,10 +99,9 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
 	GCF = ORGANISM_SUBJECT.GCF  # obtaions GCF ID that corresponds to subject
 	
-	print(GCF + '\n')
-	print(ORGANISM_SUBJECT.get_ncid_contents().items())
+	# print(GCF + '\n')
+	# print(ORGANISM_SUBJECT.get_ncid_contents().items())
 	print('Done\n\n')
-
 
 	'''
 		Parses ORGANISM_SUBJECT file (gff) to find candidate Acr/Aca protein. An Acr locus is picked according to filters
