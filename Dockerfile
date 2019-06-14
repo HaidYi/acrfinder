@@ -32,8 +32,12 @@ RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
     clustalw \
     muscle \
     prodigal \
-    diamond \
   && rm -rf /var/lib/apt/lists/*
+
+# Install diamond environment
+RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.24/diamond-linux64.tar.gz -P /opt \
+  && cd /opt && tar -xzvf diamond-linux64.tar.gz && chmod +x diamond && rm diamond-linux64.tar.gz diamond_manual.pdf \
+  && mv diamond /usr/local/bin
 
 # Install Miniconda
 RUN curl -so /opt/miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA_VERSION}-Linux-x86_64.sh \
