@@ -52,7 +52,7 @@ RUN /opt/miniconda/bin/conda install conda-build \
 RUN sudo ln -s /opt/miniconda/envs/py27/python ${CONDA_PREFIX}/bin/python2 \
   && sudo ln -s /opt/miniconda/envs/py27/pip ${CONDA_PREFIX}/bin/pip2
 ENV CONDA_DEFAULT_ENV=py36
-ENV CONDA_PREFIX=/home/user/miniconda/envs/${CONDA_DEFAULT_ENV}
+ENV CONDA_PREFIX=/opt/miniconda/envs/${CONDA_DEFAULT_ENV}
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
 # Install Python library acr_aca_finder needs
