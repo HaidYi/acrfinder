@@ -32,6 +32,7 @@ RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
     clustalw \
     muscle \
     prodigal \
+    diamond \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
@@ -49,10 +50,10 @@ RUN /opt/miniconda/bin/conda install conda-build \
   && /opt/miniconda/bin/conda clean -ya
 
 # Create a soft link for python2 and pip2
-RUN sudo ln -s /opt/miniconda/envs/py27/python ${CONDA_PREFIX}/bin/python2 \
-  && sudo ln -s /opt/miniconda/envs/py27/pip ${CONDA_PREFIX}/bin/pip2
 ENV CONDA_DEFAULT_ENV=py36
 ENV CONDA_PREFIX=/opt/miniconda/envs/${CONDA_DEFAULT_ENV}
+RUN sudo ln -s /opt/miniconda/envs/py27/python ${CONDA_PREFIX}/bin/python2 \
+  && sudo ln -s /opt/miniconda/envs/py27/pip ${CONDA_PREFIX}/bin/pip2
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
 # Install Python library acr_aca_finder needs
@@ -75,4 +76,4 @@ ENV PATH=/app/acr_aca_finder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/u
 WORKDIR /app/acr_aca_finder
 
 # CMD
-CMD [ "python3 acr_aca_cri_runner.py -n ssample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o test_output -c 0 -z B"]
+CMD [ "python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o test_output -c 0 -z B"]
