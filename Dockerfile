@@ -58,12 +58,12 @@ ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 # Install Python library acr_aca_finder needs
 RUN conda install -y biopython && conda clean -ya
 
-# set app directory and switch to it
-RUN mkdir -p /app && cd /app
+# set app directory
+RUN mkdir -p /app
 
 # Install the acr_aca_finder and CRISPRCas-Finder
-RUN git clone https://haidyi:yhd19930426@github.com/haidyi/acr_aca_finder.git
-RUN cd ./acr_aca_finder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
+RUN cd /app && git clone https://haidyi:yhd19930426@github.com/haidyi/acr_aca_finder.git
+RUN cd /app/acr_aca_finder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
 
 # Config some environmental varialbes for CRISPRCas-Finder
 RUN sed -i '1c #!/usr/bin/env python2' /app/acr_aca_finder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
