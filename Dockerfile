@@ -46,7 +46,7 @@ RUN curl -so /opt/miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CO
 ENV PATH=/opt/miniconda/bin:$PATH
 ENV CONDA_AUTO_UPDATE_CONDA=false
 
-# Create a python 3 and python 2 environment
+# Create a python 3 environment
 RUN /opt/miniconda/bin/conda install conda-build \
   && /opt/miniconda/bin/conda create -y --name py36 python=${PYTHON3_VERSION} \
   && /opt/miniconda/bin/conda clean -ya
@@ -54,11 +54,9 @@ RUN /opt/miniconda/bin/conda install conda-build \
 # Config the environment variable for python3
 ENV CONDA_DEFAULT_ENV=py36
 ENV CONDA_PREFIX=/opt/miniconda/envs/${CONDA_DEFAULT_ENV}
-# RUN ln -s /opt/miniconda/envs/py27/bin/python ${CONDA_PREFIX}/bin/python2 \
-#   && ln -s /opt/miniconda/envs/py27/bin/pip ${CONDA_PREFIX}/bin/pip2
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
-# Install Python library acr_aca_finder needs
+# Install Python library - biopython acr_aca_finder needs
 RUN conda install -y biopython && conda clean -ya
 
 # set app directory
