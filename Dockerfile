@@ -4,7 +4,6 @@ MAINTAINER Haidong Yi haidyi@mail.nankai.edu.cn
 # Config Software Versions here
 ENV CONDA_VERSION=3-4.6.14
 ENV PYTHON3_VERSION=3.6.5
-ENV PYTHON2_VERSION=2.7.11
 
 # Install some basic utilities
 RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
@@ -50,14 +49,13 @@ ENV CONDA_AUTO_UPDATE_CONDA=false
 # Create a python 3 and python 2 environment
 RUN /opt/miniconda/bin/conda install conda-build \
   && /opt/miniconda/bin/conda create -y --name py36 python=${PYTHON3_VERSION} \
-  && /opt/miniconda/bin/conda create -y --name py27 python=${PYTHON2_VERSION} \
   && /opt/miniconda/bin/conda clean -ya
 
-# Create a soft link for python2 and pip2
+# Config the environment variable for python3
 ENV CONDA_DEFAULT_ENV=py36
 ENV CONDA_PREFIX=/opt/miniconda/envs/${CONDA_DEFAULT_ENV}
-RUN sudo ln -s /opt/miniconda/envs/py27/python ${CONDA_PREFIX}/bin/python2 \
-  && sudo ln -s /opt/miniconda/envs/py27/pip ${CONDA_PREFIX}/bin/pip2
+# RUN ln -s /opt/miniconda/envs/py27/bin/python ${CONDA_PREFIX}/bin/python2 \
+#   && ln -s /opt/miniconda/envs/py27/bin/pip ${CONDA_PREFIX}/bin/pip2
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
 # Install Python library acr_aca_finder needs
