@@ -101,7 +101,7 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	
 	# print(GCF + '\n')
 	# print(ORGANISM_SUBJECT.get_ncid_contents().items())
-	print('Done\n\n')
+	# print('Done\n\n')
 
 	'''
 		Parses ORGANISM_SUBJECT file (gff) to find candidate Acr/Aca protein. An Acr locus is picked according to filters
@@ -123,9 +123,7 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(
 		ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS), OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR)
 
-	print('Done\n\n')
-
-
+	print('Filter 1-4 is Done.\n\n')
 
 	'''
 		If there are no Acr/Aca loci then there is no need to continue.
