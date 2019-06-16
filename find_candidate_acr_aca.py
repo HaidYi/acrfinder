@@ -168,6 +168,14 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	'''
 	INTERMEDIATES = OUTPUT_DIR + 'intermediates/'	# directory to store intermediate (not primarily important) files
 
+	'''
+		If there are no Acr/Aca loci then there is no need to continue.
+		Print message and end program
+	'''
+	if len(candidateAcrs) == 0:
+		print('No candidate Acr/Aca regions found')
+		exit(0)
+
 	flattenCandidates = [acr for loci in candidateAcrs for acr in loci]	# converts list of lists into a 1D list
 	CANDIDATES_FAA_FILE = INTERMEDIATES + GCF + '_candidate_acr_aca.faa'
 	write_faa(flattenCandidates, CANDIDATES_FAA_FILE)
