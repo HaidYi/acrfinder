@@ -10,8 +10,6 @@ from collections import defaultdict
 
 from regex import *
 
-
-
 '''
 	Holds information identifying proteins. 
 	Information includes:
@@ -173,16 +171,13 @@ class Organism:
 			for line in handle:
 				if line.startswith('#'):
 					continue
-
-				if 'CDS' not in line:
-					continue
-
 				cols = line.rstrip().split('\t')
-				
-				ncid, start, end, strand, otherInfo = cols[0], cols[3], cols[4], cols[6], cols[8]
 
-				cds = { 'start': start, 'end': end, 'strand':strand, 'otherInfo': otherInfo }
-				NCID_maps_CDS_LIST[ncid].append(cds)
+				if 'CDS' == cols[2]:		
+					ncid, start, end, strand, otherInfo = cols[0], cols[3], cols[4], cols[6], cols[8]
+
+					cds = { 'start': start, 'end': end, 'strand':strand, 'otherInfo': otherInfo }
+					NCID_maps_CDS_LIST[ncid].append(cds)
 
 		self.gff_parse_ncid_cds(NCID_maps_CDS_LIST, isProdigalUsed)
 
