@@ -44,7 +44,7 @@ def get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN):
 	'''
 	from formated_output import get_faa
 	for neighborhoodNum, locus in enumerate(candidateAcrs):
-		startProtein, endProtein = locus[0].wp, locus[len(locus) - 1].wp	# first and last protein of locus
+		startProtein, endProtein = locus[0], locus[len(locus) - 1]	# first and last protein of locus
 		# downstream = ORGANISM_SUBJECT.get_downstream_neighbors(PROTEIN_UP_DOWN, startProtein, inclusive=False)	# gets downstream neighbors
 		# upstream = ORGANISM_SUBJECT.get_upstream_neighbors(PROTEIN_UP_DOWN, endProtein)	# gets upstream neighbors
 		downstream = ORGANISM_SUBJECT.get_downstream_neighbors(PROTEIN_UP_DOWN, endProtein, inclusive=False)
@@ -61,7 +61,7 @@ def get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN):
 		neighborhood.extend(downstream[:])
 
 		for protein in neighborhood:	# adds neighbor list to neighbor dict
-			NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP[neighborhoodNum].append(protein.wp)
+			NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP[neighborhoodNum].append(protein.id)
 
 		neighborsFaaStr += '# Neighborhood for locus {0} starting with {1} and ending with {2}\n'.format(neighborhoodNum, startProtein, endProtein)
 		neighborsFaaStr += get_faa(neighborhood)	# continues building faa string
@@ -85,7 +85,7 @@ def get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN):
 	Returns:
 		result from parse_cdd_results()
 '''
-def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD):
+def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed):
 	with open(NEIGHBORHOOD_FAA_PATH, 'w') as handle:
 		neighborsFaaStr, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP = get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN)
 		handle.write(neighborsFaaStr)
@@ -93,7 +93,7 @@ def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_
 	from subprocess import call as execute
 	execute(['rpsblast+', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-out', CDD_RESULTS_PATH])
 
-	return parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD)
+	return parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
 
 
 
@@ -108,7 +108,7 @@ def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_
 	Returns:
 		goodNeighborhoods - list containing the locus number of candidate Acr/Aca regions that passed CDD parsing
 '''
-def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD):
+def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed):
 
 	uniqueWPHits = dict()
 	'''
@@ -119,7 +119,10 @@ def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, M
 			if not line.startswith('#'):
 				cols = line.rstrip().split('\t')
 				proteinInfo = cols[0].split('|')
-				wp = proteinInfo[1]
+				if isProdigalUsed:
+					wp = '-'.join(proteinInfo[0:2])
+				else:
+					wp = proteinInfo[1]
 
 				'''
 				Select the most significant rpsblast hit and put them into a dict.
@@ -148,19 +151,3 @@ def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, M
 	return goodNeighborhoods, uniqueWPHits
 
 
-
-# '''
-# 	Purpose:
-# 		Uses the indexes of good neighborhoods to get a list of Acr/Aca proteins at that index.
-# 	Arguments:
-# 		candidateAcrs - list of lists containing proteins in the inner list. Each protein list is an Acr/Aca locus
-# 		goodNeighborhoods - list containing the locus number of candidate Acr/Aca regions that passed CDD parsing
-# 	Returns:
-# 		goodAcrs - list of Acr/Aca proteins that passed CDD filter
-# '''
-# def get_good_candidates(candidateAcrs, goodNeighborhoods):
-# 	goodAcrs = list()
-# 	for n in goodNeighborhoods:
-# 		goodAcrs.append(candidateAcrs[n])
-
-# 	return goodAcrs
