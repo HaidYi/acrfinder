@@ -22,8 +22,8 @@ from regex import *
 		sequence - bp or amino acids that compose protein
 '''
 class Protein:
-	def __init__(self, wp, nc, sequence, position, start, end, strand):
-		self.wp, self.nc, self.sequence, self.position, self.start, self.end, self.strand = wp, nc, sequence, int(position), int(start), int(end), strand
+	def __init__(self, wp, nc, _id, sequence, position, start, end, strand):
+		self.wp, self.nc, self.id, self.sequence, self.position, self.start, self.end, self.strand = wp, nc, _id, sequence, int(position), int(start), int(end), strand
 
 
 
@@ -143,24 +143,27 @@ class Organism:
 						position += 1
 				else:
 					match = Regex.WP_REGEX.search(otherInfo)
+					_id = ''
 
 					if isProdigalUsed:
 						wpid = 'Protein({0}-{1})'.format(cdsDict['start'], cdsDict['end'])
+						_id = '-'.join([ncid, wpid])
 					elif match == None:
 						wpid = ""
 						otherInfoList = otherInfo.split(';')
 						for info in otherInfoList:
 							if 'protein_id' in info:
 								wpid = info.split('=')[1]
+						_id = wpid
 						if wpid == "":
 							raise Exception("The input .gff file doesn't contain protein id.")
 					else:
 						wpid = match.group(0)
+						_id = wpid
 					self.codingCDS += 1
-					self.NC_ID_maps_PROTEINS[ncid].append(Protein(wpid, ncid, "", position, cdsDict['start'], cdsDict['end'], cdsDict['strand'])) # Protein(wp, nc, sequence, position, start, end, strand)
+					self.NC_ID_maps_PROTEINS[ncid].append(Protein(wpid, ncid, _id, "", position, cdsDict['start'], cdsDict['end'], cdsDict['strand'])) # Protein(wp, nc, sequence, position, start, end, strand)
 					self.NC_ID_maps_WP_ID[ncid].append(wpid)
-					
-					
+										
 					position += 1
 
 
@@ -503,16 +506,24 @@ class Organism:
 		Finds position of given wp id and the ncid the protein is found in.
 
 		Params:
-			wp - protein id
+			wp - protein name
 	'''
-	def find_nc_and_position_of_protein(self, wp):
-		for ncidKey, wpList in self.NC_ID_maps_WP_ID.items():
-			try:
-				ncid, index = ncidKey, wpList.index(wp)
-				return ncid, index
-			except ValueError:
-				continue
-		return None, None
+	def find_nc_and_position_of_protein(self, protein):
+		try:
+			wpList = self.NC_ID_maps_WP_ID[protein.nc]
+			index = wpList.index(protein.wp)
+			return protein.nc, index
+		except ValueError:
+			print("The input protein cannot be found.")
+			exit(0)
+
+		# for ncidKey, wpList in self.NC_ID_maps_WP_ID.items():
+		# 	try:
+		# 		ncid, index = ncidKey, wpList.index(wp)
+		# 		return ncid, index
+		# 	except ValueError:
+		# 		continue
+		# return None, None
 
 
 
@@ -523,8 +534,8 @@ class Organism:
 		Params:
 			wp - protein id
 	'''
-	def get_protein_info(self, wp):
-		ncid, index = self.find_nc_and_position_of_protein(wp)
+	def get_protein_info(self, protein):
+		ncid, index = self.find_nc_and_position_of_protein(protein)
 		return self.NC_ID_maps_PROTEINS[ncid][index].short_info()
 
 
