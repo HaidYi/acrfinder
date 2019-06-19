@@ -220,7 +220,6 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 			Populates dict of dicts with useful diamond output
 	'''
 	WP_ID_maps_HTH_DOMAIN = dict()	# dict of dicts, holds info of all wp's with HTH domain
-	WP_ID_maps_CDD_META = dict()	# dict of dicts, holds meta data with info of CDD region that made wp ID identify as an acr gene
 	WP_ID_maps_Acr_HOMOLOG = dict() # dict of dicts, wp --> Acr Homologs 
 	with open(DIAMOND_OUTPUT_FILE, 'r', 512) as handle:
 		for line in handle:
@@ -230,7 +229,6 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				wp, start, end = regionInfo[1], regionInfo[2], regionInfo[3]
 
 				WP_ID_maps_HTH_DOMAIN[wp] = {'hth': hth, 'start': start, 'end': end}
-				WP_ID_maps_CDD_META[wp] = {'regionInfo': cols[1], 'evalue': cols[11]}
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
@@ -258,7 +256,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		if add:
 			candidateAcrs_filter4.append(locus)
 
-	return WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, candidateAcrs_filter4
+	return WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, candidateAcrs_filter4
 
 
 
