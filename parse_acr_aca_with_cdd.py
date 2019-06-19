@@ -45,16 +45,20 @@ def get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN):
 	from formated_output import get_faa
 	for neighborhoodNum, locus in enumerate(candidateAcrs):
 		startProtein, endProtein = locus[0].wp, locus[len(locus) - 1].wp	# first and last protein of locus
-		downstream = ORGANISM_SUBJECT.get_downstream_neighbors(PROTEIN_UP_DOWN, startProtein, inclusive=False)	# gets downstream neighbors
-		upstream = ORGANISM_SUBJECT.get_upstream_neighbors(PROTEIN_UP_DOWN, endProtein)	# gets upstream neighbors
-
+		# downstream = ORGANISM_SUBJECT.get_downstream_neighbors(PROTEIN_UP_DOWN, startProtein, inclusive=False)	# gets downstream neighbors
+		# upstream = ORGANISM_SUBJECT.get_upstream_neighbors(PROTEIN_UP_DOWN, endProtein)	# gets upstream neighbors
+		downstream = ORGANISM_SUBJECT.get_downstream_neighbors(PROTEIN_UP_DOWN, endProtein, inclusive=False)
+		upstream = ORGANISM_SUBJECT.get_upstream_neighbors(PROTEIN_UP_DOWN, startProtein, inclusive=False)
 
 		'''
 			Combines downstream, upstream and the remaining Acr/Aca proteins (neglecting start/end)
 		'''
-		neighborhood = downstream[:]
-		neighborhood.extend(locus[1: len(locus) -1])
-		neighborhood.extend(upstream[:])
+		# neighborhood = downstream[:]
+		# neighborhood.extend(locus[1: len(locus) -1])
+		# neighborhood.extend(upstream[:])
+		neighborhood = upstream[:]
+		neighborhood.extend(locus[:])
+		neighborhood.extend(downstream[:])
 
 		for protein in neighborhood:	# adds neighbor list to neighbor dict
 			NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP[neighborhoodNum].append(protein.wp)
@@ -105,14 +109,8 @@ def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_
 		goodNeighborhoods - list containing the locus number of candidate Acr/Aca regions that passed CDD parsing
 '''
 def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD):
-	'''
-		If MIN_NUM_PROTEINS_MATCH_CDD == 0 it means we shouldn't even run psiblast
-	'''
-	if MIN_NUM_PROTEINS_MATCH_CDD == 0:
-		goodNeighborhoods = list(NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP.keys())
-		return goodNeighborhoods
 
-	uniqueWPHits = set()
+	uniqueWPHits = dict()
 	'''
 		Traverses through psiblast results
 	'''
@@ -123,36 +121,46 @@ def parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, M
 				proteinInfo = cols[0].split('|')
 				wp = proteinInfo[1]
 
-				uniqueWPHits.add(wp)
+				'''
+				Select the most significant rpsblast hit and put them into a dict.
+				'''
+				if wp not in uniqueWPHits.keys():
+					uniqueWPHits[wp] = {'qid': cols[0], 'sid': cols[1], 'evalue': cols[10]}
 
 	NEIGHBORHOOD_NUM_maps_CDD_HITS = defaultdict(lambda: 0)
-	for wp in uniqueWPHits:
+	for wp in uniqueWPHits.keys():
 		for neighborhoodNum, neighborhoodWP in NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP.items():
 			if wp in neighborhoodWP:
 				NEIGHBORHOOD_NUM_maps_CDD_HITS[neighborhoodNum] += 1
 
+	'''
+		If MIN_NUM_PROTEINS_MATCH_CDD == 0 it means we shouldn't even run rpsblast
+	'''
+	if MIN_NUM_PROTEINS_MATCH_CDD == 0:
+		goodNeighborhoods = list(NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP.keys())
+		return goodNeighborhoods, uniqueWPHits
 
 	goodNeighborhoods = list()
 	for neighborhoodNum in NEIGHBORHOOD_NUM_maps_CDD_HITS:
 		if NEIGHBORHOOD_NUM_maps_CDD_HITS[neighborhoodNum] >= MIN_NUM_PROTEINS_MATCH_CDD:
 			goodNeighborhoods.append(neighborhoodNum)
 
-	return goodNeighborhoods
+	return goodNeighborhoods, uniqueWPHits
 
 
 
-'''
-	Purpose:
-		Uses the indexes of good neighborhoods to get a list of Acr/Aca proteins at that index.
-	Arguments:
-		candidateAcrs - list of lists containing proteins in the inner list. Each protein list is an Acr/Aca locus
-		goodNeighborhoods - list containing the locus number of candidate Acr/Aca regions that passed CDD parsing
-	Returns:
-		goodAcrs - list of Acr/Aca proteins that passed CDD filter
-'''
-def get_good_candidates(candidateAcrs, goodNeighborhoods):
-	goodAcrs = list()
-	for n in goodNeighborhoods:
-		goodAcrs.append(candidateAcrs[n])
+# '''
+# 	Purpose:
+# 		Uses the indexes of good neighborhoods to get a list of Acr/Aca proteins at that index.
+# 	Arguments:
+# 		candidateAcrs - list of lists containing proteins in the inner list. Each protein list is an Acr/Aca locus
+# 		goodNeighborhoods - list containing the locus number of candidate Acr/Aca regions that passed CDD parsing
+# 	Returns:
+# 		goodAcrs - list of Acr/Aca proteins that passed CDD filter
+# '''
+# def get_good_candidates(candidateAcrs, goodNeighborhoods):
+# 	goodAcrs = list()
+# 	for n in goodNeighborhoods:
+# 		goodAcrs.append(candidateAcrs[n])
 
-	return goodAcrs
+# 	return goodAcrs

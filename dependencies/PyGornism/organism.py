@@ -124,7 +124,7 @@ class Organism:
 	        self.countPseudo, self.positionStartsAtZero, self.bufferSize = countPseudo, positionStartsAtZero, bufferSize
 
 			        self.NC_ID_maps_PROTEINS, self.NC_ID_maps_WP_ID = defaultdict(self.empty_list), defaultdict(self.empty_list)
-					        self.totalCDS, self.codingCDS = 0, 0
+					        self.totalCDS, self.codinget_upstream_neighborsCDS = 0, 0
 
 	'''
 	def gff_parse_ncid_cds(self, NCID_maps_CDS_LIST, isProdigalUsed):

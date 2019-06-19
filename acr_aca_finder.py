@@ -181,7 +181,7 @@ def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PRO
 		Abstracts CDD processing.
 		Obtains indices of Acr/Aca we can keep.
 	'''
-	neighborhoodsFromCDD = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD)
+	neighborhoodsFromCDD, psiblastHitFromCDD = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD)
 
 
 	print("Number of Acr/Aca regions perserved after CDD: {0} out of {1} original loci".format(len(neighborhoodsFromCDD), len(candidateAcrs)))
@@ -190,7 +190,7 @@ def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PRO
 
 	print('Done\n\n')
 
-	return neighborhoodsFromCDD
+	return neighborhoodsFromCDD, psiblastHitFromCDD
 
 
 
