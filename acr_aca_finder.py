@@ -47,7 +47,7 @@ from Bio import SeqIO
 		finalAcrs - list of list with only the candidate Acr/Aca's that had an index number found in uniqueHits.
 		CANDIDATE_INDEX_maps_FINAL_ACRS - dict that contains the contents of finalAcrs but also preserves the index of each locus from the original candidate Acrs list
 '''
-def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR):
+def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR):
 	finalResultsFile = OUTPUT_DIR + GCF + '_final_acr_aca.txt'	# file to put all selected Acr/Aca loci
 	finalAcrs = []	# list containing all loci with an index number found in uniqeHits
 	CANDIDATE_INDEX_maps_FINAL_ACRS = {}	# dict that maps loci index to a locus
@@ -63,7 +63,7 @@ def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOM
 		Writes desired loci to file
 	'''
 	with open(finalResultsFile, 'w', 512) as handle:
-		handle.write(get_acr_loci(finalAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG))
+		handle.write(get_acr_loci(finalAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG))
 
 	return finalAcrs, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile
 
@@ -87,7 +87,7 @@ def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOM
 
 	Returns:
 		candidateAcrs - candidate Acr/Aca loci found
-		WP_ID_maps_HTH_DOMAIN - dict. Keys are unique protein ID's that had a hit when using hmmscan with HTH DB. The value is the name of the HTH domain
+		WP_ID_maps_Aca_HOMOLOG - dict. Keys are unique protein ID's that had a hit when using diamond with Aca DB. The value is the name of the Aca Hit
 		ORGANISM_SUBJECT - object representing ORGANISM_SUBJECT that Acr data is for
 		GCF - ID of the organism being used
 '''
@@ -121,8 +121,8 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Applies filter 1 and then filter 2 and 3  then finally filter 4 to the contents of the results of the first, sencond and third filters.
 	obtains the candidate Acr's and the proteins that have an HTH domain
 	'''
-	WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
-		OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR)
+	WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
+		OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed)
 
 	print('Filter 1-4 is Done.\n\n')
 
@@ -138,13 +138,13 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Writes acr/aca candidate file to file
 	'''
 	with open(INTERMEDIATES + GCF + '_candidate_acr_aca.txt', 'w', 3072) as handle:
-		handle.write(get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG))
+		handle.write(get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_Acr_HOMOLOG))
 		handle.flush()
 
 	print('\n\n')
 	print_acrs(candidateAcrs, 'Candidate Acr/Aca regions:')
 
-	return candidateAcrs, WP_ID_maps_HTH_DOMAIN, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG
+	return candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG
 
 
 
@@ -166,7 +166,7 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Returns:
 		neighborhoodsFromCDD - List of indices that correspond to a locus that has the CDD test.
 '''
-def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF):
+def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed):
 	'''
 		Use CDD to parse
 	'''
@@ -182,7 +182,7 @@ def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PRO
 		Abstracts CDD processing.
 		Obtains indices of Acr/Aca we can keep.
 	'''
-	neighborhoodsFromCDD, psiblastHitFromCDD = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD)
+	neighborhoodsFromCDD, psiblastHitFromCDD = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
 
 
 	print("Number of Acr/Aca regions perserved after CDD: {0} out of {1} original loci".format(len(neighborhoodsFromCDD), len(candidateAcrs)))
@@ -389,8 +389,8 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 
-	candidateAcrs, WP_ID_maps_HTH_DOMAIN, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
-	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF)
+	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
+	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed)
 
 
 	if USE_GI_DB or USE_PAI_DB:
@@ -404,7 +404,7 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 	print('Number of Acr/Aca regions perserved after combining CDD/PHASTER/IslandViewer results: {0} out of {1} original locus'.format(len(uniqueHits), len(candidateAcrs)))
 	print('Keeping ' + str(sorted(uniqueHits)) + ' candidate Acr/Aca regions')
 
-	uniqueHits, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile = finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR)
+	uniqueHits, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile = finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR)
 
 	finalHomologFile = finalizeHomolog(acr_hit_record, uniqueHits, OUTPUT_DIR, GCF, isProdigalUsed)
 	print('\nAcr Homolog results can be found here -> {0}'.format(os_path.abspath(finalHomologFile)))
