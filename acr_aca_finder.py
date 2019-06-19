@@ -23,8 +23,9 @@
 from os import path as os_path
 from os import devnull as devnull
 from time import sleep
+from collections import defaultdict
 
-from find_candidate_acr_aca import first_filter, second_and_third_filter, fourth_filter, get_acr_loci, print_acrs, cleanup_acr_id_files, acr_homolog, finalizeHomolog
+from find_candidate_acr_aca import first_filter, second_and_third_filter, fourth_filter, get_acr_loci, get_candidate_acr_loci, print_acrs, cleanup_acr_id_files, acr_homolog, finalizeHomolog
 from parse_acr_aca_with_cdd import use_cdd
 from parse_acr_aca_with_db import use_gi_db_on_acr, use_pai_db_on_acr
 from command_options import define_acr_finder_options, parse_acr_aca_id_options, parse_cdd_options, parse_db_options, create_sub_directories
@@ -120,8 +121,8 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Applies filter 1 and then filter 2 and 3  then finally filter 4 to the contents of the results of the first, sencond and third filters.
 	obtains the candidate Acr's and the proteins that have an HTH domain
 	'''
-	WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(
-		ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS), OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR)
+	WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
+		OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR)
 
 	print('Filter 1-4 is Done.\n\n')
 
@@ -137,13 +138,13 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Writes acr/aca candidate file to file
 	'''
 	with open(INTERMEDIATES + GCF + '_candidate_acr_aca.txt', 'w', 3072) as handle:
-		handle.write(get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG))
+		handle.write(get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG))
 		handle.flush()
 
 	print('\n\n')
 	print_acrs(candidateAcrs, 'Candidate Acr/Aca regions:')
 
-	return candidateAcrs, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG
+	return candidateAcrs, WP_ID_maps_HTH_DOMAIN, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG
 
 
 
@@ -388,8 +389,8 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 
-	candidateAcrs, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
-	neighborhoodsFromCDD = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF)
+	candidateAcrs, WP_ID_maps_HTH_DOMAIN, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
+	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF)
 
 
 	if USE_GI_DB or USE_PAI_DB:

@@ -221,6 +221,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	'''
 	WP_ID_maps_HTH_DOMAIN = dict()	# dict of dicts, holds info of all wp's with HTH domain
 	WP_ID_maps_Acr_HOMOLOG = dict() # dict of dicts, wp --> Acr Homologs 
+	
 	with open(DIAMOND_OUTPUT_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
@@ -237,7 +238,6 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				regionInfo = cols[1].split('|')
 				wp, acr, pident = regionInfo[1], cols[0], cols[2]
 				WP_ID_maps_Acr_HOMOLOG[wp] = {'acr_hit': '|'.join([acr, pident])}
-
 
 	'''
 		Creates new candidate list that contains only loci where at least one protein is of HTH domain.
@@ -282,12 +282,63 @@ def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_m
 		Prints 'Acr' if protein has no hth domain, otherwise it prints out the name of the domain
 	'''
 	for locus in candidateAcrs:
-		cddMetaData = ""
+		# cddMetaData = ""
+		# for protein in locus:
+		# 	if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
+		# 		if cddMetaData != "":
+		# 			cddMetaData += '_'
+		# 		cddMetaData = cddMetaData + WP_ID_maps_CDD_META[protein.wp]['regionInfo'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue']
 		for protein in locus:
+			'''
+				Searches WP_ID_maps_HTH_DOMAIN. Only wp/proteins that had an HTH hit will be keys in the dict: WP_ID_maps_HTH_DOMAIN
+				Searches WP_ID_maps_Acr_HOMOLOG. Only wp/proteins that had an Acr hit will be keys in the dict: WP_ID_maps_Acr_HOMOLOG
+			'''
+			if protein.wp in WP_ID_maps_Acr_HOMOLOG.keys():
+				acr_hit = WP_ID_maps_Acr_HOMOLOG[protein.wp]['acr_hit']
+			else:
+				acr_hit = '-'
+			
+			if protein.wp in WP_ID_maps_CDD_META.keys():
+				cddMetaData = WP_ID_maps_CDD_META[protein.wp]['qid'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue'] + '-' + WP_ID_maps_CDD_META[protein.wp]['sid']
+			else:
+				cddMetaData = '-'
+
 			if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
-				if cddMetaData != "":
-					cddMetaData += '_'
-				cddMetaData = cddMetaData + WP_ID_maps_CDD_META[protein.wp]['regionInfo'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue']
+				hth = WP_ID_maps_HTH_DOMAIN[protein.wp]['hth']
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), hth, cddMetaData, acr_hit])
+			else:
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), 'Acr', cddMetaData, acr_hit])
+
+
+			output += '\n'
+
+		output += '\n'
+
+	return output
+
+
+'''
+	Functionality:
+		Creates a string representation of all Acr loci found.
+		Each locus is seperated by a line break (empty line).
+		All columns are tab delimited
+	Args:
+		candidateAcrs - list of lists holding nieghborhood of Protein objects that passed all filters
+		ORGANISM_SUBJECT - object representing ORGANISM_SUBJECT that Acr data is for.
+		header - optional, what to print before the actual data is displayed.
+
+	Returns:
+		output - string representing all Acr loci (without cdd meta).
+'''
+def get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tAcr_Hit|pident\n'):
+	output = header
+	gcf = ORGANISM_SUBJECT.GCF
+
+	'''
+		Formatted output.
+		Prints 'Acr' if protein has no hth domain, otherwise it prints out the name of the domain
+	'''
+	for locus in candidateAcrs:
 		for protein in locus:
 			'''
 				Searches WP_ID_maps_HTH_DOMAIN. Only wp/proteins that had an HTH hit will be keys in the dict: WP_ID_maps_HTH_DOMAIN
@@ -299,9 +350,9 @@ def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_m
 				acr_hit = '-'
 			if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
 				hth = WP_ID_maps_HTH_DOMAIN[protein.wp]['hth']
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), hth, cddMetaData, acr_hit])
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), hth, acr_hit])
 			else:
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), 'Acr', cddMetaData, acr_hit])
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), 'Acr', acr_hit])
 
 
 			output += '\n'
