@@ -114,7 +114,7 @@ def second_and_third_filter(candidateAcrs, OUTPUT_DIR, GCF, AA_THRESHOLD = 150, 
 			Loops through individual Protein objects within a specific neighborhood
 		'''
 		for protein in proteinList:
-			aaLength = int( (protein.end - protein.start) / 3 )	# amino acid length of protein
+			aaLength = int( (protein.end - protein.start + 1) / 3 )	# amino acid length of protein
 
 			if aaLength <= AA_THRESHOLD:
 				'''
@@ -162,7 +162,7 @@ def second_and_third_filter(candidateAcrs, OUTPUT_DIR, GCF, AA_THRESHOLD = 150, 
 		WP_ID_maps_HTH_DOMAIN - dict. Keys are unique protein ID's that had a hit when using hmmscan with HTH DB. The value is the name of the HTH domain.
 		candidateAcrs_filter4 - list of lists holding like strand neighborhoods of Protein objects with the second and third filter applied to it
 '''
-def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR):
+def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed):
 	'''
 		Creates an faa file of the remaining proteins of organism
 	'''
@@ -180,14 +180,6 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	CANDIDATES_FAA_FILE = INTERMEDIATES + GCF + '_candidate_acr_aca.faa'
 	write_faa(flattenCandidates, CANDIDATES_FAA_FILE)
 
-	# CANDIDATES_HTH_FILE = INTERMEDIATES + GCF + '_candidate_acr_aca_hth_results.txt'	# temp file to hold all hth hits from hmmscan
-	# PARSED_HTH_FILE = INTERMEDIATES + GCF + '_candidate_acr_aca_parsed_hth_results.txt'	# temp file that contains hth hits that have been condensed using hmmparser
-
-	# with open(devnull, 'w') as DEV_NULL:
-	# 	execute(['hmmscan', '--domtblout', CANDIDATES_HTH_FILE, '-E', '.01', '--cpu', '4', HTH_HMM_DATABASE, CANDIDATES_FAA_FILE], stdout=DEV_NULL)
-
-	# with open(PARSED_HTH_FILE, 'w', 512) as handle:
-	# 	execute(['sh', HMMSCAN_PARSER_PATH, CANDIDATES_HTH_FILE], stdout = handle)
 	'''
 	  Uses diamond on newly created faa file to find proteins that has homelog in the query: 401 Acas.
 		Uses user uploaded .faa to make the database
@@ -211,52 +203,58 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE], stdout=DEV_NULL)
 
-	# '''
-	# 	Parses PARSED_HTH_FILE - file created by hmmscan-parser.
-	# 	Populates dict of dicts with useful hmmscan output
-	# '''
 	'''
 	    Parses DIAMOND_OUTPUT_FILE created by diamond blastp
 			Populates dict of dicts with useful diamond output
 	'''
-	WP_ID_maps_HTH_DOMAIN = dict()	# dict of dicts, holds info of all wp's with HTH domain
-	WP_ID_maps_Acr_HOMOLOG = dict() # dict of dicts, wp --> Acr Homologs 
+	WP_ID_maps_Aca_HOMOLOG = dict()	# dict of dicts, holds info of all wp's with Aca Hit (Considering the difference using prodigal.)
+	WP_ID_maps_Acr_HOMOLOG = dict() # dict of dicts, wp --> Acr Homologs (Considering the difference using prodigal.)
 	
 	with open(DIAMOND_OUTPUT_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
 			if int(cols[3]) > 50 and int(cols[3]) < 200:
-				hth, regionInfo = cols[0], cols[1].split('|')
-				wp, start, end = regionInfo[1], regionInfo[2], regionInfo[3]
+				aca_hit, regionInfo = cols[0], cols[1].split('|')
+				start, end = regionInfo[2], regionInfo[3]
 
-				WP_ID_maps_HTH_DOMAIN[wp] = {'hth': hth, 'start': start, 'end': end}
+				if isProdigalUsed:
+					wp = '-'.join(regionInfo[0:2])
+				else:
+					wp = regionInfo[1]
+
+				WP_ID_maps_Aca_HOMOLOG[wp] = {'aca_hit': aca_hit, 'start': start, 'end': end}
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
 			if int(cols[3]) < 200:
-				regionInfo = cols[1].split('|')
-				wp, acr, pident = regionInfo[1], cols[0], cols[2]
+				acr, regionInfo, pident = cols[0], cols[1].split('|'), cols[2]
+				
+				if isProdigalUsed:
+					wp = '-'.join(regionInfo[0:2])
+				else:
+					wp = regionInfo[1]
+				
 				WP_ID_maps_Acr_HOMOLOG[wp] = {'acr_hit': '|'.join([acr, pident])}
 
 	'''
-		Creates new candidate list that contains only loci where at least one protein is of HTH domain.
+		Creates new candidate list that contains only loci where at least one protein is of aca hit.
 	'''
 	candidateAcrs_filter4 = list()
 	for locus in candidateAcrs:
 		add = False
 		for protein in locus:
 			'''
-				Attempts to find protein ID (wp) in the dict holding wp's that were found to be of HTH domain.
+				Attempts to find protein ID (wp) in the dict holding wp's that were found to be of aca hit.
 			'''
-			if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
+			if protein.id in WP_ID_maps_Aca_HOMOLOG.keys():
 				add = True
 				break
 
 		if add:
 			candidateAcrs_filter4.append(locus)
 
-	return WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, candidateAcrs_filter4
+	return WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_Acr_HOMOLOG, candidateAcrs_filter4
 
 
 
@@ -273,41 +271,36 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	Returns:
 		output - string representing all Acr loci.
 '''
-def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tCDD MetaData\tAcr_Hit|pident\n'):
+def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tCDD MetaData\tAcr_Hit|pident\n'):
 	output = header
 	gcf = ORGANISM_SUBJECT.GCF
 
 	'''
 		Formatted output.
-		Prints 'Acr' if protein has no hth domain, otherwise it prints out the name of the domain
+		Prints 'Acr' if protein has no Aca hit, otherwise it prints out the name of the domain
 	'''
 	for locus in candidateAcrs:
-		# cddMetaData = ""
-		# for protein in locus:
-		# 	if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
-		# 		if cddMetaData != "":
-		# 			cddMetaData += '_'
-		# 		cddMetaData = cddMetaData + WP_ID_maps_CDD_META[protein.wp]['regionInfo'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue']
 		for protein in locus:
 			'''
-				Searches WP_ID_maps_HTH_DOMAIN. Only wp/proteins that had an HTH hit will be keys in the dict: WP_ID_maps_HTH_DOMAIN
+				Searches WP_ID_maps_Aca_HOMOLOG. Only wp/proteins that had an Aca hit will be keys in the dict: WP_ID_maps_Aca_HOMOLOG
 				Searches WP_ID_maps_Acr_HOMOLOG. Only wp/proteins that had an Acr hit will be keys in the dict: WP_ID_maps_Acr_HOMOLOG
 			'''
-			if protein.wp in WP_ID_maps_Acr_HOMOLOG.keys():
-				acr_hit = WP_ID_maps_Acr_HOMOLOG[protein.wp]['acr_hit']
+			if protein.id in WP_ID_maps_Acr_HOMOLOG.keys():
+				acr_hit = WP_ID_maps_Acr_HOMOLOG[protein.id]['acr_hit']
 			else:
 				acr_hit = '-'
 			
-			if protein.wp in WP_ID_maps_CDD_META.keys():
-				cddMetaData = WP_ID_maps_CDD_META[protein.wp]['qid'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue'] + '-' + WP_ID_maps_CDD_META[protein.wp]['sid']
+			if protein.id in WP_ID_maps_CDD_META.keys():
+				cddMetaData = WP_ID_maps_CDD_META[protein.id]['sid'] + '|' + WP_ID_maps_CDD_META[protein.id]['evalue']
+				# cddMetaData = WP_ID_maps_CDD_META[protein.wp]['qid'] + '|' + WP_ID_maps_CDD_META[protein.wp]['evalue'] + '-' + WP_ID_maps_CDD_META[protein.wp]['sid']
 			else:
 				cddMetaData = '-'
 
-			if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
-				hth = WP_ID_maps_HTH_DOMAIN[protein.wp]['hth']
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), hth, cddMetaData, acr_hit])
+			if protein.id in WP_ID_maps_Aca_HOMOLOG.keys():
+				aca_hit = WP_ID_maps_Aca_HOMOLOG[protein.id]['aca_hit']
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), aca_hit, cddMetaData, acr_hit])
 			else:
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), 'Acr', cddMetaData, acr_hit])
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), 'Acr', cddMetaData, acr_hit])
 
 
 			output += '\n'
@@ -330,30 +323,29 @@ def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_m
 	Returns:
 		output - string representing all Acr loci (without cdd meta).
 '''
-def get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_HTH_DOMAIN, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tAcr_Hit|pident\n'):
+def get_candidate_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tAcr_Hit|pident\n'):
 	output = header
 	gcf = ORGANISM_SUBJECT.GCF
 
 	'''
 		Formatted output.
-		Prints 'Acr' if protein has no hth domain, otherwise it prints out the name of the domain
+		Prints 'Acr' if protein has no Aca hit, otherwise it prints out the name of the domain
 	'''
 	for locus in candidateAcrs:
 		for protein in locus:
 			'''
-				Searches WP_ID_maps_HTH_DOMAIN. Only wp/proteins that had an HTH hit will be keys in the dict: WP_ID_maps_HTH_DOMAIN
+				Searches WP_ID_maps_Aca_HOMOLOG. Only wp/proteins that had an Aca hit will be keys in the dict: WP_ID_maps_Aca_HOMOLOG
 				Searches WP_ID_maps_Acr_HOMOLOG. Only wp/proteins that had an Acr hit will be keys in the dict: WP_ID_maps_Acr_HOMOLOG
 			'''
-			if protein.wp in WP_ID_maps_Acr_HOMOLOG.keys():
-				acr_hit = WP_ID_maps_Acr_HOMOLOG[protein.wp]['acr_hit']
+			if protein.id in WP_ID_maps_Acr_HOMOLOG.keys():
+				acr_hit = WP_ID_maps_Acr_HOMOLOG[protein.id]['acr_hit']
 			else:
 				acr_hit = '-'
-			if protein.wp in WP_ID_maps_HTH_DOMAIN.keys():
-				hth = WP_ID_maps_HTH_DOMAIN[protein.wp]['hth']
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), hth, acr_hit])
+			if protein.id in WP_ID_maps_Aca_HOMOLOG.keys():
+				aca_hit = WP_ID_maps_Aca_HOMOLOG[protein.id]['aca_hit']
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), aca_hit, acr_hit])
 			else:
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start) / 3)) ), 'Acr', acr_hit])
-
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), 'Acr', acr_hit])
 
 			output += '\n'
 
