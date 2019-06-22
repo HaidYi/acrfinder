@@ -173,7 +173,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		Print message and end program
 	'''
 	if len(candidateAcrs) == 0:
-		print('No candidate Acr/Aca regions found')
+		print('No candidate Acr/Aca regions found after 1,2,3 filter.')
 		exit(0)
 
 	flattenCandidates = [acr for loci in candidateAcrs for acr in loci]	# converts list of lists into a 1D list
