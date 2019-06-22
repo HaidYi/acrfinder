@@ -374,8 +374,6 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	# KEEP_INTERMEDIATES = True
 
-	# HMMSCAN_PARSER_PATH = 'dependencies/hth_hmm/hmmscan-parser.sh'  # path to hmmscan parser shell script
-
 	'''
 	Search Acrs with homolog methods: diamond (diamond against the whole faa)
 	'''
