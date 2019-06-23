@@ -110,7 +110,7 @@ def limit_acr(candidateAcrs, NC_ID_maps_START_END, uniqueNcids, PRINT_STRICT, PR
 			for protein in locus:
 				locus_start_end_list.append( (protein.start, protein.end) )  # add (protein.start, protein.end) into list
 			
-			startEndList.extend( (protein.start, protein.end) )  # extend the locus start-end list
+			startEndList.extend( locus_start_end_list )  # extend the locus start-end list
 			
 			# Sort the list using the start of different intervals
 			startEndList = sorted(startEndList, key = lambda x: x[0])
