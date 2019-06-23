@@ -11,6 +11,14 @@
 '''
 from collections import defaultdict
 
+'''
+	Purpose:	Judging whether two intervals overlap
+
+	Arguments:	Interval_1: the first interval (start, end)
+				Interval_2: the second interval (start, end)
+'''
+def isItvOverlap(interval_1, interval_2):
+	return max(interval_1[0], interval_2[0]) < min(interval_1[1], interval_2[1])
 
 '''
 	Purpose:	Parses GI DB file.
@@ -82,87 +90,55 @@ def parse_pai_file(PAI_NC_ID_maps_START_END, PAI_DB_FILE):
 '''
 def limit_acr(candidateAcrs, NC_ID_maps_START_END, uniqueNcids, PRINT_STRICT, PRINT_LAX, queue, _type):
 	'''
-		Cycles through all individual locus found in file.
-		Each locus is seperated by an empty line.
-		Generator returns a string of lines (locus).
+		Using Interval Overlapping Algorithm to decide the Acr hit against 'PAI' and 'GI' Database.
 	'''
 	for position, locus in enumerate(candidateAcrs):
-		locusNcid = locus[0].nc	# obtains the ncid of the locus
-
+		locusNcid = locus[0].nc  # nc id of the locus
+		locus_start_end_list = list()
+		
 		'''
-			We only care about loci found in a DB.
+			We only care about loci found in a DB
 			Therefore if the ncid of the loci doesn't appear in the keys of the dict that contains unique ncids then we don't need to parse that locus. It won't be in a region the DB identified.
 		'''
+		
 		if locusNcid in uniqueNcids:
-			locusStart = int(locus[0].start)	# gets the starting BP of current acr/aca region
+			startEndList = NC_ID_maps_START_END[locusNcid]
 
-			startEndList = NC_ID_maps_START_END[locusNcid]	#	gets all the start/end positions of all regions found in given DB for the NCID the acr/aca region resides in
+			isLaxHit, isStrictHit = False, False
+			locus_hit_set = set()
+			
+			for protein in locus:
+				locus_start_end_list.append( (protein.start, protein.end) )  # add (protein.start, protein.end) into list
+			
+			startEndList.extend( (protein.start, protein.end) )  # extend the locus start-end list
+			
+			# Sort the list using the start of different intervals
+			startEndList = sorted(startEndList, key = lambda x: x[0])
 
-			'''
-				Default booleans deciding whether region will be added to lax file or strict file.
-				If a locus will be printed to strict output then it will also be printed to stric output.
-			'''
-			addToStrict, addToLax = False, False
+			# put protein (in locus) hitted in the db into locus_hit_set list
+			for index, _ in enumerate(startEndList[:-1]):
+				if isItvOverlap(startEndList[index], startEndList[index + 1]):
+					isLaxHit = True
+					if startEndList[index] in locus_start_end_list:
+						locus_hit_set.add(startEndList[index])
+					if startEndList[index + 1] in locus_start_end_list:
+						locus_hit_set.add(startEndList[index + 1])
 
-			'''
-				Iterates through all the start/end positions found for given DB
-			'''
-			for start, end in startEndList:
-				if ( start <= locusStart <= end ):
-					addToLax = True
-					addToStrict = True
+			# isStrictHit = true if all proteins in the loci are hitted in the db
+			if len(locus) == len(locus_hit_set):
+				isStrictHit = True
+			
+			if PRINT_STRICT: # Strict Mode
+				if isStrictHit:
+					lociHits = queue.get()
+					lociHits.add(position)
+					queue.put(lociHits)
+			elif PRINT_LAX: # Lax Mode
+				if isLaxHit:
+					lociHits = queue.get()
+					lociHits.add(position)
+					queue.put(lociHits)
 
-				'''
-					If user just wants lax output and we found that acr/aca region was found near a region found in DB then parsing more DB regions is pointless.
-				'''
-				if addToLax and not PRINT_STRICT:
-					break
-
-				'''
-					If user doesn't want lax output and the first protein of current acr/aca region wasn't in current start/end pair of DB then we can continue to the next start/end pair of DB.
-				'''
-				if not addToStrict and not PRINT_LAX:
-					continue
-
-				'''
-					If we when parsing previous start/end positions addToLax was given a true value and currently addToStrict is false then we can continue since there will be no way addToStrict will be true in this iteration.
-				'''
-				if addToLax and not addToStrict:
-					continue
-
-				'''
-					Iterates through all proteins found in acr/aca region exept for the first protein.
-					Gets the end position of each protein in locus.
-					Finds out whether protein is within a start/end region in DB.
-				'''
-				for locusProtein in locus[1:]:
-					proteinEnd = int( locusProtein.end )
-					'''
-						If the end of current protein is not within the start/end interval then we cannot add it to strict output.
-						If addToLax was ever true we can break out of loop since finding another instance where addToLax is true is redundant.
-					'''
-					if not ( start <= proteinEnd <= end ):
-						addToStrict = False
-						if addToLax:
-							break
-						'''
-							When inside this inner loop we can only change addToStrict to false. Meaning that we are trying to disprove that addToStrict is true.
-							However if we find an instance where the protein start/end is within the start/end interval we can add it to lax output.
-						'''
-					else:
-						addToLax = True
-
-				'''
-					If both addToLax and addToStrict are true then processing is pointless, break.
-				'''
-				if ( addToLax and addToStrict ):
-					break
-
-
-			if addToStrict:
-				lociHits = queue.get()
-				lociHits.add(position)
-				queue.put(lociHits)
 
 
 
