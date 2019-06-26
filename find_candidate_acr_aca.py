@@ -196,11 +196,11 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		execute(['diamond', 'makedb', '--in', CANDIDATES_FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
 	
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 
+		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-k', '1', '-e', '.01', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
 
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
+		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-k', '1', '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE], stdout=DEV_NULL)
 
 	'''
