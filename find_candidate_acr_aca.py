@@ -239,7 +239,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				else:
 					wp = regionInfo[1]
 				
-				WP_ID_maps_Acr_HOMOLOG[wp].append( {'acr_hit': '|'.join([acr, pident])} )
+				WP_ID_maps_Acr_HOMOLOG[wp].append( {'acr_hit': '|'.join([acr, pident]), 'evalue': evalue} )
 	
 	# Fetch the most significant output from the results of diamond
 	for wp_id in WP_ID_maps_Aca_HOMOLOG.keys():
