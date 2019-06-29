@@ -243,10 +243,10 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	
 	# Fetch the most significant output from the results of diamond
 	for wp_id in WP_ID_maps_Aca_HOMOLOG.keys():
-		WP_ID_maps_Aca_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Aca_HOMOLOG[wp_id], key=lambda s: s['evalue'])
+		WP_ID_maps_Aca_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Aca_HOMOLOG[wp_id], key=lambda s: s['evalue'])[0]
 	
 	for wp_id in WP_ID_maps_Acr_HOMOLOG.keys():
-		WP_ID_maps_Acr_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Acr_HOMOLOG[wp_id], key=lambda s: s['evalue'])
+		WP_ID_maps_Acr_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Acr_HOMOLOG[wp_id], key=lambda s: s['evalue'])[0]
 		
 
 	'''
