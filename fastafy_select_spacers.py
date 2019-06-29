@@ -129,8 +129,9 @@ def parse_result_json(CRISPR_CAS_OUTPUT: str, SELECT_SPACER_FASTA: str, EVIDENCE
 		Terminate program.
 	'''
 	if not hasCRISPRCasSystem:
-		print('No CRISPRCas systems found. Terminating...')
-		exit(0)
+		pass
+		# print('No CRISPRCas systems found. Terminating...')
+		# exit(0)
 
 
 
