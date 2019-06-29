@@ -150,7 +150,7 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 						Otherwise it is added to farBlastHits.
 					'''
 					if proteins[0].split('\t')[2] == target_accession: # if target accession equals acr accession
-						if locusStart <= blastHitStart <= locusEnd or locusStart <= blastHitEnd <= locusEnd or blastHitStart <= locusStart <= blastHitEnd or blastHitStart <= locusEnd <= blastHitEnd:
+						if max(locusStart, blastHitStart) < min(locusEnd, blastHitEnd):
 							highConfidence = True
 
 							for infoList in START_END_maps_BLAST_HIT[startEnd]:
