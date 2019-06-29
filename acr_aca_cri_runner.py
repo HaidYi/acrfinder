@@ -15,6 +15,7 @@
 '''
 
 from subprocess import call as execute
+from os import devnull as devnull
 from os import path as os_path
 from optparse import OptionParser
 from collections import defaultdict
@@ -22,7 +23,7 @@ from collections import defaultdict
 from acr_aca import getLocus, getLocusStartAndEnd
 from acr_aca_finder import get_options as aaf_get_options, acr_aca_run as aa_runner
 from command_options import define_acr_aca_cri_runner_options, parse_master_options, parse_crispr_cas_finder_options, parse_io_options, create_sub_directories
-
+from find_candidate_acr_aca import acr_homolog
 
 '''
 	Functionality:
@@ -185,7 +186,21 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 		handle.write(header)
 		handle.write('\n\n'.join(newLoci))
 
+	'''
+		Functionality: 
+	'''
+def acr_aca_homolog(FAA_FILE, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, isProdigalUsed):
+	DIAMOND_DATA_BASE = INTERMEDIATES + GCF + '_acr_diamond_database'
+	DIAMOND_ACR_QUERY = KNOWN_ACR_DATABASE
+	DIAMOND_ACRHOMOLOG_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.txt'
+	with open(devnull, 'w') as DEV_NULL:
+		execute(['diamond', 'makedb', '--in', FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
+	with open(devnull, 'w') as DEV_NULL:
+		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
 
+	_, ACR_HOMOFILE = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
+
+	print('The result of using homolog methods can be found -> {0}\nThe corresponding sequence can be found -> {1}\n'.format(os_path.abspath(DIAMOND_ACRHOMOLOG_FILE), os_path.abspath(ACR_HOMOFILE)))
 
 '''
 	********************************************************************************************************
@@ -237,9 +252,13 @@ from crispr_cas_runner import crispr_cas_runner as cc_runner
 '''
 if GENOME_TYPE != 'V':
 	BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME = cc_runner(CRISPR_CAS_FINDER_EXECUTABLE, CRISPR_CAS_FINDER_SO, FNA_FILE, OUTPUT_DIR, INTERMEDIATES, GENOME_TYPE, EVIDENCE_LEVEL) # Get crispr spacers and spacers blast hit file
-	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
-
-	classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
+	if BLAST_FILE == None and CRISPR_NAME_maps_SEQ_NAME == None:
+		acr_aca_homolog(FAA_FILE, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, isProdigalUsed)  # No crispr-cas system was found above the given evidence level, terminating...
+		print('Acr-Aca finder program was finished using homolog methods, terminating...\n')
+		exit(0)
+	else:
+		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
+		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
 else: # if organism is virus, no need to run CRISPRCas-Finder
 	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 
