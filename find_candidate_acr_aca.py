@@ -283,7 +283,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	Returns:
 		output - string representing all Acr loci.
 '''
-def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tAcr/Aca\tCDD MetaData\tAcr_Hit|pident\n'):
+def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tAcr/Aca\tCDD MetaData\tAcr_Hit|pident\tSequence\n'):
 	output = header
 	gcf = ORGANISM_SUBJECT.GCF
 
@@ -310,9 +310,9 @@ def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_
 
 			if protein.id in WP_ID_maps_Aca_HOMOLOG.keys():
 				aca_hit = WP_ID_maps_Aca_HOMOLOG[protein.id]['aca_hit']
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), aca_hit, cddMetaData, acr_hit])
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), aca_hit, cddMetaData, acr_hit, protein.sequence])
 			else:
-				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), 'Acr', cddMetaData, acr_hit])
+				output += '\t'.join([gcf, str(protein.position), protein.nc, str(protein.start), str(protein.end), protein.strand, protein.wp, str( int(((protein.end - protein.start + 1) / 3)) ), 'Acr', cddMetaData, acr_hit, protein.sequence])
 
 
 			output += '\n'
