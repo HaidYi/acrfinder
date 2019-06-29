@@ -405,8 +405,9 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 	uniqueHits, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile = finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR)
 
 	finalHomologFile = finalizeHomolog(acr_hit_record, uniqueHits, OUTPUT_DIR, GCF, isProdigalUsed)
-	print('\nAcr Homolog results can be found here -> {0}'.format(os_path.abspath(finalHomologFile)))
-	print('\n\n')
+	print('\033[31m')  # highlight the homology based method
+	print('\nAcr Homolog final results can be found here -> {0}'.format(os_path.abspath(finalHomologFile)))
+	print('\033[0m\n\n')
 	print_acrs(CANDIDATE_INDEX_maps_FINAL_ACRS, 'Final Acr/Aca regions:', isDict=True)
 
 	if OUTPUT_DIR == "":

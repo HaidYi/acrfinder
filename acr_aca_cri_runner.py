@@ -200,7 +200,10 @@ def acr_aca_homolog(FAA_FILE, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, isProdigal
 
 	_, ACR_HOMOFILE = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 
+	print('\033[31m')  # highlight the homology based method
+	print('\nNo expected crispr-cas system was found, only the homology based method will be used.\n')
 	print('The result of using homolog methods can be found -> {0}\nThe corresponding sequence can be found -> {1}\n'.format(os_path.abspath(DIAMOND_ACRHOMOLOG_FILE), os_path.abspath(ACR_HOMOFILE)))
+	print('\033[0m')
 
 '''
 	********************************************************************************************************
