@@ -23,6 +23,7 @@
 from sys import path as sys_path
 from os import devnull as devnull
 from subprocess import call as execute
+from collections import defaultdict
 
 sys_path.append('dependencies/PyGornism/')
 from organism import Organism
@@ -30,6 +31,7 @@ from formated_output import write_faa
 from regex import Regex
 from Bio import SeqIO
 import math
+import heapq
 
 
 
@@ -196,19 +198,19 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		execute(['diamond', 'makedb', '--in', CANDIDATES_FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
 	
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-k', '1', '-e', '.01', '-f', '6', 
+		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
 
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-k', '1', '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
+		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE], stdout=DEV_NULL)
 
 	'''
 	    Parses DIAMOND_OUTPUT_FILE created by diamond blastp
 			Populates dict of dicts with useful diamond output
 	'''
-	WP_ID_maps_Aca_HOMOLOG = dict()	# dict of dicts, holds info of all wp's with Aca Hit (Considering the difference using prodigal.)
-	WP_ID_maps_Acr_HOMOLOG = dict() # dict of dicts, wp --> Acr Homologs (Considering the difference using prodigal.)
+	WP_ID_maps_Aca_HOMOLOG = defaultdict(list)	# dict of list, holds info of all wp's with Aca Hit (Considering the difference using prodigal.)
+	WP_ID_maps_Acr_HOMOLOG = defaultdict(list)  # dict of list, wp --> Acr Homologs (Considering the difference using prodigal.)
 	
 	with open(DIAMOND_OUTPUT_FILE, 'r', 512) as handle:
 		for line in handle:
@@ -216,26 +218,36 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 			if int(cols[3]) > 50 and int(cols[3]) < 200:
 				aca_hit, regionInfo = cols[0], cols[1].split('|')
 				start, end = regionInfo[2], regionInfo[3]
+				evalue = float(cols[11])
 
 				if isProdigalUsed:
 					wp = '-'.join(regionInfo[0:2])
 				else:
 					wp = regionInfo[1]
 
-				WP_ID_maps_Aca_HOMOLOG[wp] = {'aca_hit': aca_hit, 'start': start, 'end': end}
+				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': aca_hit, 'start': start, 'end': end, 'evalue': evalue} )
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
 			if int(cols[3]) < 200:
 				acr, regionInfo, pident = cols[0], cols[1].split('|'), cols[2]
+				evalue = float(cols[11])
 				
 				if isProdigalUsed:
 					wp = '-'.join(regionInfo[0:2])
 				else:
 					wp = regionInfo[1]
 				
-				WP_ID_maps_Acr_HOMOLOG[wp] = {'acr_hit': '|'.join([acr, pident])}
+				WP_ID_maps_Acr_HOMOLOG[wp].append( {'acr_hit': '|'.join([acr, pident])} )
+	
+	# Fetch the most significant output from the results of diamond
+	for wp_id in WP_ID_maps_Aca_HOMOLOG.keys():
+		WP_ID_maps_Aca_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Aca_HOMOLOG[wp_id], key=lambda s: s['evalue'])
+	
+	for wp_id in WP_ID_maps_Acr_HOMOLOG.keys():
+		WP_ID_maps_Acr_HOMOLOG[wp_id] = heapq.nsmallest(1, WP_ID_maps_Acr_HOMOLOG[wp_id], key=lambda s: s['evalue'])
+		
 
 	'''
 		Creates new candidate list that contains only loci where at least one protein is of aca hit.
@@ -271,7 +283,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	Returns:
 		output - string representing all Acr loci.
 '''
-def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tDomain\tCDD MetaData\tAcr_Hit|pident\n'):
+def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tAcr/Aca\tCDD MetaData\tAcr_Hit|pident\n'):
 	output = header
 	gcf = ORGANISM_SUBJECT.GCF
 
@@ -423,12 +435,11 @@ def acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdiga
 	acr_hit_record = dict()
 	record_dict = SeqIO.to_dict(SeqIO.parse(FAA_FILE, 'fasta'))
 	ACR_INTERMEDIATES_FASTA_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.fasta'
-	out_handle = open(ACR_INTERMEDIATES_FASTA_FILE, 'w')
 
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
-			acr, wp, pident, slen = cols[0], cols[1], cols[2], cols[3]
+			acr, wp, pident, slen, evalue = cols[0], cols[1], cols[2], cols[3], float(cols[10])
 			if isProdigalUsed:
 				protein_info_list = record_dict[wp].description.split('#')
 				protein_start = protein_info_list[1].strip()
@@ -436,17 +447,30 @@ def acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdiga
 				protein = 'Protein({0}-{1})'.format(protein_start, protein_end)
 				nc_id = wp[0:wp.rfind('_')]
 
-				acr_hit_record[nc_id + protein] = record_dict[wp]
-				acr_hit_record[nc_id + protein].id = '|'.join([nc_id, protein, slen, pident])
-				acr_hit_record[nc_id + protein].description = acr
-				SeqIO.write(acr_hit_record[nc_id + protein], out_handle, "fasta")
+				if nc_id + protein in acr_hit_record:
+					if evalue < acr_hit_record[nc_id + protein]['evalue']:
+						acr_hit_record[nc_id + protein]['record'].id = '|'.join([nc_id, protein, slen, pident])
+						acr_hit_record[nc_id + protein]['record'].description = acr
+						acr_hit_record[nc_id + protein]['evalue'] = evalue
+				else:
+					acr_hit_record[nc_id + protein] = {'record': record_dict[wp], 'evalue': evalue}
+					acr_hit_record[nc_id + protein]['record'].id = '|'.join([nc_id, protein, slen, pident])
+					acr_hit_record[nc_id + protein]['record'].description = acr
+				
 			else:
-				acr_hit_record[wp] = record_dict[wp]
-				acr_hit_record[wp].id = '|'.join([wp, slen, pident])
-				acr_hit_record[wp].description = acr
-				SeqIO.write(acr_hit_record[wp], out_handle, "fasta") 
+				if wp in acr_hit_record:
+					if evalue < acr_hit_record[wp]['evalue']:
+						acr_hit_record[wp]['record'].id = '|'.join([wp, slen, pident])
+						acr_hit_record[wp]['record'].description = acr
+						acr_hit_record[wp]['evalue'] = evalue
+				else:
+					acr_hit_record[wp] = {'record': record_dict[wp], 'evalue': evalue}
+					acr_hit_record[wp]['record'].id = '|'.join([wp, slen, pident])
+					acr_hit_record[wp]['record'].description = acr
 	
-	out_handle.close()
+	with open(ACR_INTERMEDIATES_FASTA_FILE, 'w') as out_handle:
+		for wp_id in acr_hit_record:
+			SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
 
 	return acr_hit_record, ACR_INTERMEDIATES_FASTA_FILE
 
@@ -492,10 +516,10 @@ def finalizeHomolog(acr_hit_record, finalAcrs, OUTPUT_DIR, GCF, isProdigalUsed):
 
 		if isAcrHitinLocus:
 			for wp in Acr_hit_homolog:
-				acr_hit_record[wp].description += ' {0}|{1}|{2}|{3}'.format(nc_id, '-'.join(Acr_Aca_cluster), locus_start, locus_end)
+				acr_hit_record[wp]['record'].description += ' {0}|{1}|{2}|{3}'.format(nc_id, '-'.join(Acr_Aca_cluster), locus_start, locus_end)
 
-	for record in acr_hit_record:
-		SeqIO.write(acr_hit_record[record], out_handle, 'fasta')
+	for wp_id in acr_hit_record:
+		SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
 
 	out_handle.close()
 
