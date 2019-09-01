@@ -18,8 +18,6 @@
 
 ****
 
-<br>
-
 <div id='installation' />
 
 ## I. Installation / Dependencies
@@ -40,8 +38,6 @@ It is a common problem to forget to install `CRISPRCasFinder`, so ensure that `C
 
 ****
 
-<br>
-
 
 <div id='about' />
 
@@ -58,8 +54,6 @@ To find out how to use other dependencies look at online sources:
 *`CRISPRCasFinder` is used to identify CRISPR Cas systems. This will then be used to <a href='#classification'>classify</a> Acr/Aca regions. If no CRISPR Cas systems are found within a NCID then only homology based method will be implemented for Acr search.
 
 ****
-
-<br>
 
 <div id='using_acrfinder' />
 
@@ -222,9 +216,6 @@ If using pathogenic databases (strict): locus 3 and 4 are chosen -->
 
 **<span style='color:RebeccaPurple'>parse_acr_aca_with_db.py</span>** - parses candidate Acr/Aca regions using pathogenicy database(s) -->
 
-
-
-<br>
 <div id='docker_support' />
 
 ### **IV. <span style='color:RebeccaPurple'>Docker Support</span>**
@@ -277,7 +268,6 @@ Contains methods to obtain all loci one at a time as well as getting the start a
 
 **** -->
 
-<br>
 
 <div id='examples' />
 
