@@ -30,7 +30,7 @@ It is a common problem to forget to install `CRISPRCasFinder`, so ensure that `C
 
 `blastn` - <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> will call/use `blastn` to search a genome. Install `blastn` from <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
 
-`psiblast+` - Used with CDD's to find Acr/Aca proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
+`psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
 
 `python3` - For all scripts with .py extension. Use any version at or above 3.4.
 
