@@ -82,7 +82,7 @@ AcrFinder needs **.fna**, **.gff** and **.faa** as input. Only **.fna** file as 
 | -e     | --proteinUpDown | Number of surrounding (up- and down-stream) proteins to use when gathering a neighborhood {default = 5} [integer] |
 | -c     | --minCDDProteins | Minimum number of proteins in neighborhood that must have a CDD mobilome hit so the Acr/Aca locus can be attributed to a CDD hit {default = 2} [integer] |
 | -g     | --gi        | Uses IslandViewer (GI) database. {default = false} [boolean] |
-| -p     | --pai       |  Uses PHASTER (PAI) database. {default = false} [boolean] |
+| -p     | --pai       |  Uses PHASTER (prophage) database. {default = false} [boolean] |
 | -s     | --strict    | All proteins in locus must lie within a region found in DB(s) being used {default = false} [boolean] |
 | -l     | --lax       | Only one protein must lie within a region found in DB(s) being used {default = true} [boolean] |
 
