@@ -82,7 +82,7 @@ AcrFinder needs **.fna**, **.gff** and **.faa** as input. Only **.fna** file as 
 | -e     | --proteinUpDown | Number of surrounding (up- and down-stream) proteins to use when gathering a neighborhood {default = 5} [integer] |
 | -c     | --minCDDProteins | Minimum number of proteins in neighborhood that must have a CDD mobilome hit so the Acr/Aca locus can be attributed to a CDD hit {default = 2} [integer] |
 | -g     | --gi        | Uses IslandViewer (GI) database. {default = false} [boolean] |
-| -p     | --pai       |  Uses PHASTER (prophage) database. {default = false} [boolean] |
+| -p     | --prophage       |  Uses PHASTER (prophage) database. {default = false} [boolean] |
 | -s     | --strict    | All proteins in locus must lie within a region found in DB(s) being used {default = false} [boolean] |
 | -l     | --lax       | Only one protein must lie within a region found in DB(s) being used {default = true} [boolean] |
 
@@ -106,18 +106,18 @@ There are three levels of classification in output:
 |*<output_dir>*/subjects           | The folder that contains the input files |
 |*<output_dir>*/intermediates      | The folder that contains intermediate result files |
 |*<output_dir>*/blast_out.txt      | Results from blast+ |
-|*<output_dir>*/*<organism_id>*_final_acr_aca.txt | The final set of Acr/Aca regions that passed the initial filters as well as CDD and pathogencity filtering. |
-|*<output_dir>*/*<organism_id>*_final_acr_homolog.fasta | The final set of proteins that are aligned to Acr database within given similarity threshold in orgainism. |
-|*<output_dir>*/intermediates/masked_db/ | The directory containing the db to be used by blast+ |
-|*<output_dir>*/intermediates/spacers_with_desired_evidence.fna | The file containing CRISPR spacers found in the organism that have the desired evidence level. The query for blast+ |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.txt | Potential Acr/Aca regions. |
+|*<output_dir>*/*<organism_id>*_final_acr_aca.txt | The final set of Acr/Aca regions that passed the initial filters as well as the CDD mobilome and prophage/gi filters. |
+|*<output_dir>*/*<organism_id>*_final_acr_homolog.fasta | The final set of proteins that have similarity to proteins in the Acr database under given similarity threshold. |
+|*<output_dir>*/intermediates/masked_db/ | The directory contains the db (fna with crispr array regions masked) to be used for blastn search for self-targeting spacer matches (the database for blastn search) |
+|*<output_dir>*/intermediates/spacers_with_desired_evidence.fna | The file contains CRISPR spacers extracted from crisprcasfinder results that have the desired evidence level. The query for blastn search |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.txt | Potential Acr/Aca regions that passed initial filters. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa | Potential Acr/Aca regions in an faa format. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used with psiblast+ and CDD's |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_cdd_results.txt | Results from psiblast+ on potential Acr/Aca regions using CDD's |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_result.txt | Results of diamond. These results can be aligned to **Aca database** within given similarity threshold using protein in *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_homolog_result.txt | Results of diamond. These results can be aligned to **Acr database** within given similarity threshold using protein in *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used as the query for psiblast+ search against CDD's mobilome models. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_cdd_results.txt | Result file from psiblast+ against CDD's mobilome models. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_result.txt | Results of diamond. These are search results with the **Aca database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_homolog_result.txt | Results of diamond. These are search results with the  **Acr database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_database.dmnd | Database of diamond made from *<organism_id>*_candidate_acr_aca.faa file. |
-|*<output_dir>*/intermediates/*<organism_id>*_acr_homolog_result.txt | Results of diamond. These results can be aligned to **Acr database** within given similarity threshold using proteins in *<output_dir>*/subjects/*<organism_id>*_protein.faa. |
+|*<output_dir>*/intermediates/*<organism_id>*_acr_homolog_result.txt | Results of diamond. These are search results with the **Acr database** as the query and *<output_dir>*/subjects/*<organism_id>*_protein.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_acr_homolog_result.fasta | *Protein Sequence* file (*.faa*) of protein in *<output_dir>*/intermediates/*<organism_id>*_acr_homolog_result.txt |
 |*<output_dir>*/intermediates/*<organism_id>*_acr_diamond_database.dmnd | Database of diamond made from *<output_dir>*/subjects/*<organism_id>*_protein.faa file |
 
@@ -139,7 +139,7 @@ Uses the following filters to identify Acr/Aca proteins:
 
 The PSSM's used were chosen because they imply Anti-CRISPR functionality. They can be found in <span style='color:tomato'>dependencies/cdds</span>.
 
-By default the pathogenicity databases aren't used to filter the candidate Acr/Aca regions. However, CDD's are used by default.
+By default the pathogenicity databases aren't used to filter the candidate Acr/Aca regions. However, CDD's mobilome models are used by default.
 
 If a pathogenicy database is specified for use, the default method used to check is "lax". This method will include candidate Acr/Aca regions in the final result set if at least one protein in the Acr/Aca locus is found within a pathogenic region. "strict" will include candidate Acr/Aca regions in the final result set if all proteins are found within a pathogenic region.
 
