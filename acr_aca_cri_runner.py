@@ -249,9 +249,9 @@ else:
 from crispr_cas_runner import crispr_cas_runner as cc_runner
 '''
 	Runs CRISPRCasFinder.
-	If there are no CRISPR arrays found then the program will terminate.
+	If there are no CRISPR arrays found then the program will only use homology-based method.
 	If there are CRISPR arrays the program contiunes and will find arrays with an evidence level equal to or greater than EVIDENCE_LEVEL.
-	BLAST_FILE will be null/None when there are no arrays with the wanted evidence level
+	BLAST_FILE will be null/None when there are no arrays with the wanted evidence level.
 '''
 if GENOME_TYPE != 'V':
 	BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME = cc_runner(CRISPR_CAS_FINDER_EXECUTABLE, CRISPR_CAS_FINDER_SO, FNA_FILE, OUTPUT_DIR, INTERMEDIATES, GENOME_TYPE, EVIDENCE_LEVEL) # Get crispr spacers and spacers blast hit file
