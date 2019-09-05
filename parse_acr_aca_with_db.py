@@ -7,18 +7,36 @@
 
 	Author:
 		Javi Gomez - https://github.com/rtomyj
+		Haidong Yi - https://github.com/HaidYi
 	*****************************************************************************************************
 '''
 from collections import defaultdict
 
 '''
-	Purpose:	Judging whether two intervals overlap
+	Purpose:	fetch the number of intervals in list 2 that intersect with list 1
 
-	Arguments:	Interval_1: the first interval (start, end)
-				Interval_2: the second interval (start, end)
+	Arguments:	list_Interval_1: the first interval list
+				list_Interval_2: the second interval list
+	
+	Returns: set of elements in list 2 that intersect with elements in list 1
 '''
-def isItvOverlap(interval_1, interval_2):
-	return max(interval_1[0], interval_2[0]) < min(interval_1[1], interval_2[1])
+
+def intervalIntersection(list_Interval_1, list_Interval_2):
+	locus_hit_set = set()
+	i = j = 0
+	while i < len(list_Interval_1) and j < len(list_Interval_2):
+		l_start = max(list_Interval_1[i][0], list_Interval_2[j][0])
+		r_end = min(list_Interval_1[i][1], list_Interval_2[j][1])
+		if l_start < r_end:
+			locus_hit_set.add(list_Interval_2[j])
+		
+		if list_Interval_1[i][1] < list_Interval_2[j][1]:
+			i += 1
+		else:
+			j += 1
+	
+	return locus_hit_set
+
 
 '''
 	Purpose:	Parses GI DB file.
@@ -42,8 +60,6 @@ def parse_gi_file(GI_NC_ID_maps_START_END, GI_DB_FILE):
 			ncid, start, end = cols[0], cols[1], cols[2]	# extracts an assumed NC ID and its start and end position
 			tupStartEnd = (int(start), int(end))	# converts start and end from string to int and makes a tuple out of it
 			GI_NC_ID_maps_START_END[ncid].append(tupStartEnd)	# appends start/end tuple to ncid dict with using the tuples ID as key
-
-
 
 '''
 	Purpose:	Parses PAI DB file
@@ -105,25 +121,18 @@ def limit_acr(candidateAcrs, NC_ID_maps_START_END, uniqueNcids, PRINT_STRICT, PR
 			startEndList = NC_ID_maps_START_END[locusNcid]
 
 			isLaxHit, isStrictHit = False, False
-			locus_hit_set = set()
 			
 			for protein in locus:
 				locus_start_end_list.append( (protein.start, protein.end) )  # add (protein.start, protein.end) into list
 			
-			startEndList.extend( locus_start_end_list )  # extend the locus start-end list
-			
 			# Sort the list using the start of different intervals
+			locus_start_end_list = sorted(locus_start_end_list, key = lambda x: x[0])
 			startEndList = sorted(startEndList, key = lambda x: x[0])
 
-			# put protein (in locus) hitted in the db into locus_hit_set list
-			for index, _ in enumerate(startEndList[:-1]):
-				if isItvOverlap(startEndList[index], startEndList[index + 1]):
-					isLaxHit = True
-					if startEndList[index] in locus_start_end_list:
-						locus_hit_set.add(startEndList[index])
-					if startEndList[index + 1] in locus_start_end_list:
-						locus_hit_set.add(startEndList[index + 1])
-
+			locus_hit_set = intervalIntersection(startEndList, locus_start_end_list)
+			# isLaxHit = true if there exists a protein in the loci is hitted in the db
+			if len(locus_hit_set) > 0:
+				isLaxHit = True
 			# isStrictHit = true if all proteins in the loci are hitted in the db
 			if len(locus) == len(locus_hit_set):
 				isStrictHit = True
@@ -138,9 +147,6 @@ def limit_acr(candidateAcrs, NC_ID_maps_START_END, uniqueNcids, PRINT_STRICT, PR
 					lociHits = queue.get()
 					lociHits.add(position)
 					queue.put(lociHits)
-
-
-
 
 '''
 	Purpose:	Builds dict of ncids that contain GI's using the GI DB file.
@@ -161,8 +167,6 @@ def use_gi_db_on_acr(candidateAcrs, PRINT_STRICT, PRINT_LAX, GI_DB_FILE, queue):
 	print('Total number of ncids found in gi db: ' + str(len(mobilomeNcids)))	# prints number of unique ncids found in GI file
 
 	limit_acr(candidateAcrs, GI_NC_ID_maps_START_END, mobilomeNcids, PRINT_STRICT, PRINT_LAX, queue, 'gi')	# parses the input file and creates new files (lax/strict) with only the results that lie within/strictly in a known GI
-
-
 
 '''
 	Purpose:	Builds dict of ncids that contain GI's using the GI DB file.
