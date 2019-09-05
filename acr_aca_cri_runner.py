@@ -234,7 +234,7 @@ print('Treating organism as {0}\n\n\n'.format(GENOME_TYPE_maps_NAME[GENOME_TYPE]
 '''
 	Validating fna/faa input files
 '''
-if GFF_FILE == "" or FAA_FILE == "":  # creates new gff and faa  file if user didn't specify either one
+if GFF_FILE == "" or FAA_FILE == "":  # creates new gff and faa file if user didn't specify either one
 	GFF_FILE, FAA_FILE = create_gff_faa_with_prodigal(FNA_FILE, SUBJECTS_DIR, GCF)
 	isProdigalUsed = True
 else:
