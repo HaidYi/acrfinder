@@ -2,7 +2,7 @@
 
 # shell script allowing to install all CRISPRCasFinder.pl-v4.2's dependencies
 #
-# same version than CRISPRCasFinder.pl, here 4.2.17
+# same version than CRISPRCasFinder.pl, here 4.2.19
 # authors: David Couvin, Fabrice Leclerc, Claire Toffano-Nioche
 
 #------------------------
@@ -65,16 +65,16 @@ else
     # launchInstall "$packageManagmentInstall" "clustalw" "$LOGFILE"
 
     echo "copy /usr/bin/clustalw to $CURDIR/bin/clustalw2" >> $LOGFILE
-    cp /usr/bin/clustalw $CURDIR/bin/clustalw2
-    cpanm Try::Tiny >> $LOGFILE
-    cpanm Test::Most >> $LOGFILE
-    cpanm JSON::Parse >> $LOGFILE
-    cpanm Class::Struct >> $LOGFILE
-    cpanm Bio::DB::Fasta >> $LOGFILE
-    cpanm File::Copy  >> $LOGFILE
-    cpanm Bio::Seq Bio::SeqIO >> $LOGFILE
-    cpanm Bio::Tools::Run::Alignment::Clustalw >> $LOGFILE 
-    cpanm Bio::Tools::Run::Alignment::Muscle >> $LOGFILE
+    sudo cp /usr/bin/clustalw $CURDIR/bin/clustalw2
+    sudo cpanm Try::Tiny >> $LOGFILE
+    sudo cpanm Test::Most >> $LOGFILE
+    sudo cpanm JSON::Parse >> $LOGFILE
+    sudo cpanm Class::Struct >> $LOGFILE
+    sudo cpanm Bio::DB::Fasta >> $LOGFILE
+    sudo cpanm File::Copy  >> $LOGFILE
+    sudo cpanm Bio::Seq Bio::SeqIO >> $LOGFILE
+    sudo cpanm Bio::Tools::Run::Alignment::Clustalw >> $LOGFILE 
+    sudo cpanm Bio::Tools::Run::Alignment::Muscle >> $LOGFILE
 
     #install vmatch
     echo "Installation of Vmatch" >> $LOGFILE
@@ -84,9 +84,9 @@ else
     tar -zxf vmatch-2.3.0-${distribution}-64bit.tar.gz >> $LOGFILE
     gcc -Wall -Werror -fPIC -O3 -shared vmatch-2.3.0-${distribution}-64bit/SELECT/sel392.c -o $CURDIR/sel392v2.so >> $LOGFILE
     echo "copy $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/vmatch, mkvtree and vsubseqselect to $CURDIR/bin/" >> $LOGFILE
-    cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/vmatch $CURDIR/bin/vmatch2
-    cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/mkvtree $CURDIR/bin/mkvtree2
-    cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/vsubseqselect $CURDIR/bin/vsubseqselect2
+    sudo cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/vmatch $CURDIR/bin/vmatch2
+    sudo cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/mkvtree $CURDIR/bin/mkvtree2
+    sudo cp $CURDIR/src/vmatch-2.3.0-${distribution}-64bit/vsubseqselect $CURDIR/bin/vsubseqselect2
     echo "change directory to $CURDIR" >> $LOGFILE
     cd $CURDIR
 
@@ -112,7 +112,8 @@ else
     echo "export PATH=${CURDIR}/bin:${PATH}" >> $HOME/.profile
     
     #set environment variables
-    source $HOME/.profile
+    #source $HOME/.profile #this command must be typed directly by user
 
 # if $OSTYPE
 fi 
+
