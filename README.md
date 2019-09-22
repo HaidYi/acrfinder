@@ -59,7 +59,7 @@ To find out how to use other dependencies look at online sources:
 
 <div id='using_acrfinder' />
 
-### **III. <span style='color:RebeccaPurple'>Using AcrFinder</span>**
+## **III. <span style='color:RebeccaPurple'>Using AcrFinder</span>**
 
 #### Input
 
@@ -220,7 +220,7 @@ If using pathogenic databases (strict): locus 3 and 4 are chosen -->
 
 <div id='docker_support' />
 
-### **IV. <span style='color:RebeccaPurple'>Docker Support</span>**
+## **IV. <span style='color:RebeccaPurple'>Docker Support</span>**
 
 To help users to configure the environment to use the software easily, we provide the _.Dockerfile_ can be used using the command:
 
@@ -274,7 +274,7 @@ Contains methods to obtain all loci one at a time as well as getting the start a
 
 <div id='examples' />
 
-### **V. Examples**
+## **V. Examples**
 
 ```bash
 python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o output_dir -z B
@@ -328,16 +328,16 @@ Uses both pathogenicty databases
 
 <div id='workflow' />
 
-### **VI. Workflow of AcrFinder**
+## **VI. Workflow of AcrFinder**
 
-<img src="http://bcb.unl.edu/AcrDB/Download/knownAcrAca/web-pipeline.pdf">
+<iframe src="http://bcb.unl.edu/AcrDB/Download/knownAcrAca/web-pipeline.pdf"></iframe>
 
 ****
 
 
 <div id='faq' />
 
-### **VII. FAQ**
+## **VII. FAQ**
 
 **Q) I ran <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> and I got errors that pertain to CRISPR/Cas. Whats the issue?**
 
