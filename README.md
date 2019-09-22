@@ -14,7 +14,9 @@
 
 <a href='#examples'>V. Examples</a>
 
-<a href='#faq'>VIII. FAQ</a>
+<a href='#workflow'>VI. Workflow</a>
+
+<a href='#faq'>VII. FAQ</a>
 
 ****
 
@@ -223,11 +225,12 @@ If using pathogenic databases (strict): locus 3 and 4 are chosen -->
 To help users to configure the environment to use the software easily, we provide the _.Dockerfile_ can be used using the command:
 
 ```bash
-cd path/to/repo
+git clone https://github.com/haidyi/acrfinder.git
+cd acrfinder
 docker build -t [tag name] .
 ```
 
-or you can pull the image from docker hub using the command:
+If you don't want to build the image by yourself, AcrFinder is also available at **Docker Hub**. You can pull the AcrFinder from docker hub directly using the command:
 
 ```bash
 docker pull [OPTIONS] haidyi/AcrFinder:latest
@@ -282,14 +285,27 @@ or you can only use **.fna** file as input.
 python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o output_dir -z B
 ```
 
-#### Use Docker Image
+#### Run the container
 <!-- 
 Increased number of sorounding (neighbors) proteins to use with CDD to 20
 
 Increased the number of proteins that must have a CDD hit in the neighbors to 4 -->
+Firstly, make sure the docker image has been pulled from the docker hub or built by yourself. AcrFinder is located at the work directory of the container. 
+
+##### Interactive Usage
 ```bash
-docker run [OPTIONS] [NAME:TAG] python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o output_dir -z B
+docker run [OPTIONS] [NAME:TAG] /bin/bash
+python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o [output dir] -z B
 ```
+
+##### Use own sequence
+If you want to use your own sequence for analysis, you can use the flag `-v` in docker to load your the host directory to the containder. The entire command is like this:
+
+```bash
+docker run -v [host dir]:[container dir] python3 acr_aca_cri_runner.py -n [loaded .fna file] -f [loaded .gff file] -a [loaded .faa file] -o [output dir] -z B
+```
+
+For more information about how to use docker, you can refer to https://docs.docker.com.
 
 ****
 
@@ -310,9 +326,18 @@ Uses both pathogenicty databases
 
 <br> -->
 
+<div id='workflow' />
+
+### **VI. Workflow of AcrFinder**
+
+<img src="http://bcb.unl.edu/AcrDB/Download/knownAcrAca/web-pipeline.pdf">
+
+****
+
+
 <div id='faq' />
 
-### **VI. FAQ**
+### **VII. FAQ**
 
 **Q) I ran <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> and I got errors that pertain to CRISPR/Cas. Whats the issue?**
 
