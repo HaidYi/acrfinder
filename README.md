@@ -295,14 +295,14 @@ Firstly, make sure the docker image has been pulled from the docker hub or built
 ##### Interactive Usage
 ```bash
 docker run [OPTIONS] [NAME:TAG] /bin/bash
-python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o [output dir] -z B
+python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o [output dir] -z B -c 2 -p true -g true
 ```
 
 ##### Use own sequence
 If you want to use your own sequence for analysis, you can use the flag `-v` in docker to load your the host directory to the containder. The entire command is like this:
 
 ```bash
-docker run -v [host dir]:[container dir] python3 acr_aca_cri_runner.py -n [loaded .fna file] -f [loaded .gff file] -a [loaded .faa file] -o [output dir] -z B
+docker run -v [host dir]:[container dir] python3 acr_aca_cri_runner.py -n [loaded .fna file] -f [loaded .gff file] -a [loaded .faa file] -o [output dir] -z B -c 2 -p true -g true
 ```
 
 For more information about how to use docker, you can refer to https://docs.docker.com.
