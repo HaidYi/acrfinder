@@ -122,7 +122,7 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	obtains the candidate Acr's and the proteins that have an HTH domain
 	'''
 	WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_Acr_HOMOLOG, candidateAcrs = fourth_filter(second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
-		OUTPUT_DIR, GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed)
+		GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS), GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed)
 
 	print('Filter 1-4 is Done.\n\n')
 
@@ -385,7 +385,7 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 	with open(devnull, 'w') as DEV_NULL:
 		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
 
-	acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
+	#acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 
 	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
 	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed)
@@ -404,10 +404,10 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	uniqueHits, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile = finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR)
 
-	finalHomologFile = finalizeHomolog(acr_hit_record, uniqueHits, OUTPUT_DIR, GCF, isProdigalUsed)
-	print('\033[31m')  # highlight the homology based method
-	print('\nAcr Homolog final results can be found here -> {0}'.format(os_path.abspath(finalHomologFile)))
-	print('\033[0m\n\n')
+	#finalHomologFile = finalizeHomolog(acr_hit_record, uniqueHits, OUTPUT_DIR, GCF, isProdigalUsed)
+	#print('\033[31m')  # highlight the homology based method
+	#print('\nAcr Homolog final results can be found here -> {0}'.format(os_path.abspath(finalHomologFile)))
+	#print('\033[0m\n\n')
 	print_acrs(CANDIDATE_INDEX_maps_FINAL_ACRS, 'Final Acr/Aca regions:', isDict=True)
 
 	if OUTPUT_DIR == "":
