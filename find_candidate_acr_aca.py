@@ -480,14 +480,16 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 	for wp in acr_hit_record:
 		protein = WP_Maps_Protein[wp]
 		output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.wp, protein.strand, str( int(((protein.end - protein.start + 1) / 3)) ) )
-		if protein in Protein_Maps_Loci:
+		if wp in Protein_Maps_Loci:
 			startList = []; endList = []; loci_list = []
-			for loci_protein in Protein_Maps_Loci[protein]:
+			for loci_protein in Protein_Maps_Loci[wp]:
 				loci_list.append(str(loci_protein.wp))
 				startList.append(loci_protein.start)
 				endList.append(loci_protein.end)
 			start = min(startList); end = max(endList)
-			output += "{}|{}|{}\t".format('-'.join(loci_list), start, end ) 
+			output += "{}|{}|{}\t".format('-'.join(loci_list), start, end )
+		else:
+			output += "-\t"
 		output += "{}\n".format(protein.sequence)
 
 	with open(ACR_INTERMEDIATES_FASTA_FILE, 'w') as out_handle:
