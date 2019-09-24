@@ -100,7 +100,7 @@ def first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS = 2):
 	Returns:
 		candidateAcrs_2 - list of lists holding like strand neighborhoods of Protein objects with the second and third filter applied to it
 '''
-def second_and_third_filter(candidateAcrs, OUTPUT_DIR, GCF, AA_THRESHOLD = 150, DISTANCE_THRESHOLD = 250, MIN_PROTEINS_IN_LOCUS = 2):
+def second_and_third_filter(candidateAcrs, GCF, AA_THRESHOLD = 150, DISTANCE_THRESHOLD = 250, MIN_PROTEINS_IN_LOCUS = 2):
 	candidateAcrs_2 = list()
 	# INTERMEDIATES = OUTPUT_DIR + 'intermediates/'
 	# flattenCandidates = [acr for loci in candidateAcrs for acr in loci]
@@ -431,10 +431,18 @@ def cleanup_acr_id_files(GCF, OUTPUT_DIR):
 		acr_hit_record - the homolog sequence dict (protein id -> SeqRecord data (defined in Biopython https://biopython-cn.readthedocs.io/zh_CN/latest/cn/chr03.html ) )
 		ACR_INTERMEDIATES_FASTA_FILE - the homolog sequence data (KNOWN-ACR_DATABASE against FAA_FILE)
 '''
-def acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed):
+def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, isProdigalUsed):
+	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
+	GCF = ORGANISM_SUBJECT.GCF  # obtaions GCF ID that corresponds to subject
+	
 	acr_hit_record = dict()
 	record_dict = SeqIO.to_dict(SeqIO.parse(FAA_FILE, 'fasta'))
-	ACR_INTERMEDIATES_FASTA_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.fasta'
+	ACR_INTERMEDIATES_FASTA_FILE = INTERMEDIATES + GCF + '_acr_homolog.txt'
+
+	candidate_loci = second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
+		GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS)
+	WP_Maps_Protein = {protein.wp: protein for _, proteinList in ORGANISM_SUBJECT.get_ncid_contents().items() for protein in proteinList}
+	Protein_Maps_Loci = {protein.wp: loci for loci in candidate_loci for protein in loci}
 
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
@@ -468,9 +476,24 @@ def acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdiga
 					acr_hit_record[wp]['record'].id = '|'.join([wp, slen, pident])
 					acr_hit_record[wp]['record'].description = acr
 	
+	output = '#GCF\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tGenome_Loci|start|end\tAcr_Hit|pident\tSequence\n'
+	for wp in acr_hit_record:
+		protein = WP_Maps_Protein[wp]
+		output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.wp, protein.strand, str( int(((protein.end - protein.start + 1) / 3)) ) )
+		if protein in Protein_Maps_Loci:
+			startList = []; endList = []; loci_list = []
+			for loci_protein in Protein_Maps_Loci[protein]:
+				loci_list.append(str(loci_protein.wp))
+				startList.append(loci_protein.start)
+				endList.append(loci_protein.end)
+			start = min(startList); end = max(endList)
+			output += "{}|{}|{}\t".format('-'.join(loci_list), start, end ) 
+		output += "{}\n".format(protein.sequence)
+
 	with open(ACR_INTERMEDIATES_FASTA_FILE, 'w') as out_handle:
-		for wp_id in acr_hit_record:
-			SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
+		out_handle.write(output)
+		# for wp_id in acr_hit_record:
+		# 	SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
 
 	return acr_hit_record, ACR_INTERMEDIATES_FASTA_FILE
 
@@ -489,7 +512,7 @@ def acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdiga
 		finalHomologFile - the result file of acr homolog search methods (contains acr homologs located in Acr-Aca locus)
 '''
 def finalizeHomolog(acr_hit_record, finalAcrs, OUTPUT_DIR, GCF, isProdigalUsed):
-	finalHomologFile = OUTPUT_DIR + GCF + '_final_acr_homolog.fasta'
+	finalHomologFile = OUTPUT_DIR + GCF + '_guilt-by-association.out'
 	out_handle = open(finalHomologFile, 'w')
 
 	for locus in finalAcrs:
