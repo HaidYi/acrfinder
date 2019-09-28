@@ -431,23 +431,23 @@ def cleanup_acr_id_files(GCF, OUTPUT_DIR):
 		acr_hit_record - the homolog sequence dict (protein id -> SeqRecord data (defined in Biopython https://biopython-cn.readthedocs.io/zh_CN/latest/cn/chr03.html ) )
 		ACR_INTERMEDIATES_FASTA_FILE - the homolog sequence data (KNOWN-ACR_DATABASE against FAA_FILE)
 '''
-def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, isProdigalUsed):
+def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed):
 	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
 	GCF = ORGANISM_SUBJECT.GCF  # obtaions GCF ID that corresponds to subject
 	
 	acr_hit_record = dict()
 	record_dict = SeqIO.to_dict(SeqIO.parse(FAA_FILE, 'fasta'))
-	ACR_INTERMEDIATES_FASTA_FILE = INTERMEDIATES + GCF + '_acr_homolog.txt'
+	HOMOLOGY_FINAL_RESULT_FILE = OUTPUT_DIR + GCF + '_homology_based.out'
 
 	candidate_loci = second_and_third_filter(first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS),
 		GCF, AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS)
-	WP_Maps_Protein = {protein.wp: protein for _, proteinList in ORGANISM_SUBJECT.get_ncid_contents().items() for protein in proteinList}
-	Protein_Maps_Loci = {protein.wp: loci for loci in candidate_loci for protein in loci}
+	WP_Maps_Protein = {protein.id: protein for _, proteinList in ORGANISM_SUBJECT.get_ncid_contents().items() for protein in proteinList}
+	Protein_Maps_Loci = {protein.id: loci for loci in candidate_loci for protein in loci}
 
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
 			cols = line.rstrip().split('\t')
-			acr, wp, pident, slen, evalue = cols[0], cols[1], cols[2], cols[3], float(cols[10])
+			acr, wp, pident, evalue = cols[0], cols[1], cols[2], float(cols[10])
 			if isProdigalUsed:
 				protein_info_list = record_dict[wp].description.split('#')
 				protein_start = protein_info_list[1].strip()
@@ -455,49 +455,46 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 				protein = 'Protein({0}-{1})'.format(protein_start, protein_end)
 				nc_id = wp[0:wp.rfind('_')]
 
-				if nc_id + protein in acr_hit_record:
-					if evalue < acr_hit_record[nc_id + protein]['evalue']:
-						acr_hit_record[nc_id + protein]['record'].id = '|'.join([nc_id, protein, slen, pident])
-						acr_hit_record[nc_id + protein]['record'].description = acr
-						acr_hit_record[nc_id + protein]['evalue'] = evalue
+				_id = '-'.join([nc_id, wp])
+
+				if _id in acr_hit_record:
+					if evalue < acr_hit_record[_id]['evalue']:
+						acr_hit_record[_id] = {'record': record_dict[wp], 'evalue': evalue, 'nc_id': nc_id,
+											   'protein_id': protein, 'pident': pident, 'acr': acr}
 				else:
-					acr_hit_record[nc_id + protein] = {'record': record_dict[wp], 'evalue': evalue}
-					acr_hit_record[nc_id + protein]['record'].id = '|'.join([nc_id, protein, slen, pident])
-					acr_hit_record[nc_id + protein]['record'].description = acr
-				
+					acr_hit_record[_id] = {'record': record_dict[wp], 'evalue': evalue, 'nc_id': nc_id,
+										   'protein_id': protein, 'pident': pident, 'acr': acr}
 			else:
 				if wp in acr_hit_record:
 					if evalue < acr_hit_record[wp]['evalue']:
-						acr_hit_record[wp]['record'].id = '|'.join([wp, slen, pident])
-						acr_hit_record[wp]['record'].description = acr
-						acr_hit_record[wp]['evalue'] = evalue
+						acr_hit_record[wp] = {'record': record_dict[wp], 'evalue': evalue,
+											  'protein_id': wp, 'pident': pident, 'acr': acr}
 				else:
-					acr_hit_record[wp] = {'record': record_dict[wp], 'evalue': evalue}
-					acr_hit_record[wp]['record'].id = '|'.join([wp, slen, pident])
-					acr_hit_record[wp]['record'].description = acr
-	
+					acr_hit_record[wp] = {'record': record_dict[wp], 'evalue': evalue, 
+										  'protein_id': wp, 'pident': pident, 'acr': acr}
+
 	output = '#GCF\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tGenome_Loci|start|end\tAcr_Hit|pident\tSequence\n'
-	for wp in acr_hit_record:
-		protein = WP_Maps_Protein[wp]
-		output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.wp, protein.strand, str( int(((protein.end - protein.start + 1) / 3)) ) )
-		if wp in Protein_Maps_Loci:
-			startList = []; endList = []; loci_list = []
-			for loci_protein in Protein_Maps_Loci[wp]:
-				loci_list.append(str(loci_protein.wp))
-				startList.append(loci_protein.start)
-				endList.append(loci_protein.end)
-			start = min(startList); end = max(endList)
-			output += "{}|{}|{}\t".format('-'.join(loci_list), start, end )
-		else:
-			output += "-\t"
-		output += "{}\n".format(protein.sequence)
+	if len(acr_hit_record) > 0:
+		for wp in acr_hit_record:
+			protein = WP_Maps_Protein[wp]
+			output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.wp, protein.strand, str( int(((protein.end - protein.start + 1) / 3)) ) )
+			if wp in Protein_Maps_Loci:
+				startList = []; endList = []; loci_list = []
+				for loci_protein in Protein_Maps_Loci[wp]:
+					loci_list.append(str(loci_protein.wp))
+					startList.append(loci_protein.start)
+					endList.append(loci_protein.end)
+				start = min(startList); end = max(endList)
+				output += "{}|{}|{}\t{}|{}\t".format('-'.join(loci_list), start, end, acr_hit_record[wp]['acr'], acr_hit_record[wp]['pident'])
+			else:
+				output += "-\t-\t"
+			output += "{}\n".format(protein.sequence)
 
-	with open(ACR_INTERMEDIATES_FASTA_FILE, 'w') as out_handle:
-		out_handle.write(output)
-		# for wp_id in acr_hit_record:
-		# 	SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
-
-	return acr_hit_record, ACR_INTERMEDIATES_FASTA_FILE
+		with open(HOMOLOGY_FINAL_RESULT_FILE, 'w') as out_handle:
+			out_handle.write(output)
+		return acr_hit_record, HOMOLOGY_FINAL_RESULT_FILE
+	else:
+		return acr_hit_record, None
 
 
 
@@ -513,40 +510,40 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 	Returns:
 		finalHomologFile - the result file of acr homolog search methods (contains acr homologs located in Acr-Aca locus)
 '''
-def finalizeHomolog(acr_hit_record, finalAcrs, OUTPUT_DIR, GCF, isProdigalUsed):
-	finalHomologFile = OUTPUT_DIR + GCF + '_guilt-by-association.out'
-	out_handle = open(finalHomologFile, 'w')
+# def finalizeHomolog(acr_hit_record, finalAcrs, OUTPUT_DIR, GCF, isProdigalUsed):
+# 	finalHomologFile = OUTPUT_DIR + GCF + 'homology.out'
+# 	out_handle = open(finalHomologFile, 'w')
 
-	for locus in finalAcrs:
-		locus_start = math.inf; locus_end = 0
-		isAcrHitinLocus = False
-		Acr_hit_homolog = list()
-		Acr_Aca_cluster = list()
-		nc_id = ''
+# 	for locus in finalAcrs:
+# 		locus_start = math.inf; locus_end = 0
+# 		isAcrHitinLocus = False
+# 		Acr_hit_homolog = list()
+# 		Acr_Aca_cluster = list()
+# 		nc_id = ''
 
-		for protein in locus:
-			locus_start = protein.start if protein.start < locus_start else locus_start
-			locus_end = protein.end if protein.end > locus_end else locus_end
+# 		for protein in locus:
+# 			locus_start = protein.start if protein.start < locus_start else locus_start
+# 			locus_end = protein.end if protein.end > locus_end else locus_end
 
-			Acr_Aca_cluster.append(str(protein.wp))
-			nc_id = protein.nc
-			if isProdigalUsed:
-				if nc_id + protein.wp in acr_hit_record.keys():
-					Acr_hit_homolog.append(nc_id + protein.wp)
-					isAcrHitinLocus = True
-			else:
-				if protein.wp in acr_hit_record.keys():
-					Acr_hit_homolog.append(protein.wp)
-					isAcrHitinLocus = True
+# 			Acr_Aca_cluster.append(str(protein.wp))
+# 			nc_id = protein.nc
+# 			if isProdigalUsed:
+# 				if nc_id + protein.wp in acr_hit_record.keys():
+# 					Acr_hit_homolog.append(nc_id + protein.wp)
+# 					isAcrHitinLocus = True
+# 			else:
+# 				if protein.wp in acr_hit_record.keys():
+# 					Acr_hit_homolog.append(protein.wp)
+# 					isAcrHitinLocus = True
 
-		if isAcrHitinLocus:
-			for wp in Acr_hit_homolog:
-				acr_hit_record[wp]['record'].description += ' {0}|{1}|{2}|{3}'.format(nc_id, '-'.join(Acr_Aca_cluster), locus_start, locus_end)
+# 		if isAcrHitinLocus:
+# 			for wp in Acr_hit_homolog:
+# 				acr_hit_record[wp]['record'].description += ' {0}|{1}|{2}|{3}'.format(nc_id, '-'.join(Acr_Aca_cluster), locus_start, locus_end)
 
-	for wp_id in acr_hit_record:
-		SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
+# 	for wp_id in acr_hit_record:
+# 		SeqIO.write(acr_hit_record[wp_id]['record'], out_handle, 'fasta')
 
-	out_handle.close()
+# 	out_handle.close()
 
-	return finalHomologFile
+# 	return finalHomologFile
 
