@@ -455,7 +455,7 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 				protein = 'Protein({0}-{1})'.format(protein_start, protein_end)
 				nc_id = wp[0:wp.rfind('_')]
 
-				_id = '-'.join([nc_id, wp])
+				_id = '-'.join([nc_id, protein])
 
 				if _id in acr_hit_record:
 					if evalue < acr_hit_record[_id]['evalue']:
@@ -477,7 +477,7 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 	if len(acr_hit_record) > 0:
 		for wp in acr_hit_record:
 			protein = WP_Maps_Protein[wp]
-			output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.wp, protein.strand, str( int(((protein.end - protein.start + 1) / 3)) ) )
+			output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
 			if wp in Protein_Maps_Loci:
 				startList = []; endList = []; loci_list = []
 				for loci_protein in Protein_Maps_Loci[wp]:
@@ -487,7 +487,7 @@ def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANC
 				start = min(startList); end = max(endList)
 				output += "{}|{}|{}\t{}|{}\t".format('-'.join(loci_list), start, end, acr_hit_record[wp]['acr'], acr_hit_record[wp]['pident'])
 			else:
-				output += "-\t-\t"
+				output += "---\t---\t"
 			output += "{}\n".format(protein.sequence)
 
 		with open(HOMOLOGY_FINAL_RESULT_FILE, 'w') as out_handle:
