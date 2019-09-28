@@ -25,7 +25,7 @@ from os import devnull as devnull
 from time import sleep
 from collections import defaultdict
 
-from find_candidate_acr_aca import first_filter, second_and_third_filter, fourth_filter, get_acr_loci, get_candidate_acr_loci, print_acrs, cleanup_acr_id_files, acr_homolog, finalizeHomolog
+from find_candidate_acr_aca import first_filter, second_and_third_filter, fourth_filter, get_acr_loci, get_candidate_acr_loci, print_acrs, cleanup_acr_id_files, acr_homolog
 from parse_acr_aca_with_cdd import use_cdd
 from parse_acr_aca_with_db import use_gi_db_on_acr, use_pai_db_on_acr
 from command_options import define_acr_finder_options, parse_acr_aca_id_options, parse_cdd_options, parse_db_options, create_sub_directories
@@ -48,7 +48,7 @@ from Bio import SeqIO
 		CANDIDATE_INDEX_maps_FINAL_ACRS - dict that contains the contents of finalAcrs but also preserves the index of each locus from the original candidate Acrs list
 '''
 def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, GCF, OUTPUT_DIR):
-	finalResultsFile = OUTPUT_DIR + GCF + '_final_acr_aca.txt'	# file to put all selected Acr/Aca loci
+	finalResultsFile = OUTPUT_DIR + GCF + '_guilt_by_association.out'	# file to put all selected Acr/Aca loci
 	finalAcrs = []	# list containing all loci with an index number found in uniqeHits
 	CANDIDATE_INDEX_maps_FINAL_ACRS = {}	# dict that maps loci index to a locus
 
@@ -62,9 +62,14 @@ def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOM
 	'''
 		Writes desired loci to file
 	'''
-	with open(finalResultsFile, 'w', 512) as handle:
-		handle.write(get_acr_loci(finalAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG))
-
+	if len(finalAcrs) > 0:
+		with open(finalResultsFile, 'w', 512) as handle:
+			handle.write(get_acr_loci(finalAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG))
+	else:
+		print('\033[92m')	# color output
+		print('\nNo guilt-by-association result was found, terminating...\n')
+		print('\033[0m')	# makes output normal color
+		exit(0)
 	return finalAcrs, CANDIDATE_INDEX_maps_FINAL_ACRS, finalResultsFile
 
 
