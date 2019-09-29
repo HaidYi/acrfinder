@@ -101,7 +101,7 @@ def first_filter(ORGANISM_SUBJECT, MIN_PROTEINS_IN_LOCUS = 2):
 	Returns:
 		candidateAcrs_2 - list of lists holding like strand neighborhoods of Protein objects with the second and third filter applied to it
 '''
-def second_and_third_filter(candidateAcrs, GCF, AA_THRESHOLD = 150, DISTANCE_THRESHOLD = 250, MIN_PROTEINS_IN_LOCUS = 2):
+def second_and_third_filter(candidateAcrs, GCF, AA_THRESHOLD = 200, DISTANCE_THRESHOLD = 150, MIN_PROTEINS_IN_LOCUS = 2):
 	candidateAcrs_2 = list()
 	# INTERMEDIATES = OUTPUT_DIR + 'intermediates/'
 	# flattenCandidates = [acr for loci in candidateAcrs for acr in loci]

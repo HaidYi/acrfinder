@@ -89,8 +89,8 @@ def define_master_options(parser):
 		Nothing
 '''
 def define_acr_aca_id_options(parser):
-	parser.add_option('-m', '--aaThresh', action = 'store', dest = 'aaThresh', help = 'max amino acid length of protein. Default = 150', default = '150')
-	parser.add_option('-d', '--distThresh', action = 'store', dest = 'distThresh', help = 'max intergenic distance between proteins. Default = 250', default = '250')
+	parser.add_option('-m', '--aaThresh', action = 'store', dest = 'aaThresh', help = 'max amino acid length of protein. Default = 200', default = '200')
+	parser.add_option('-d', '--distThresh', action = 'store', dest = 'distThresh', help = 'max intergenic distance between proteins. Default = 150', default = '150')
 	parser.add_option('-r', '--minProteins', action = 'store', dest = 'minProteins', help = 'Minimum number of proteins a locus must have in order to keep as candidate. Default = 2', default = '2')
 	parser.add_option('-t', '--aca', action = 'store', dest = 'acaDB', help = 'Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci', default = 'dependencies/diamond_query/401-aca.faa')
 	parser.add_option('-u', '--acr', action='store', dest='acrDB', help='Known Acr file (.faa) to diamond the homolog of Acr', default = 'dependencies/diamond_query/known-acr.faa')
