@@ -13,7 +13,7 @@
 		This work is advised by Dr. Yanbin Yin at UNL - yyin@unl.edu
 	*****************************************************************************************************
 '''
-
+import subprocess
 from subprocess import call as execute
 from os import devnull as devnull
 from os import path as os_path
@@ -194,9 +194,9 @@ def acr_aca_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRE
 	DIAMOND_ACR_QUERY = KNOWN_ACR_DATABASE
 	DIAMOND_ACRHOMOLOG_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.txt'
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'makedb', '--in', FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
+		execute(['diamond', 'makedb', '--in', FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
+		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
 
 	_, HOMOLOG_FINAL_RESULT_FILE = acr_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed)
 

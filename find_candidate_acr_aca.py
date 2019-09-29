@@ -22,6 +22,7 @@
 '''
 from sys import path as sys_path
 from os import devnull as devnull
+import subprocess
 from subprocess import call as execute
 from collections import defaultdict
 
@@ -195,15 +196,15 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	DIAMOND_ACRHOMOLOG_FILE = INTERMEDIATES + GCF + '_candidate_acr_homolog_result.txt'
 
 	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'makedb', '--in', CANDIDATES_FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
+		execute(['diamond', 'makedb', '--in', CANDIDATES_FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
 	
 	with open(devnull, 'w') as DEV_NULL:
 		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 
-		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
+		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
 
 	with open(devnull, 'w') as DEV_NULL:
 		execute(['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '40', '--query-cover', '0.8', '-f', '6', 
-		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE], stdout=DEV_NULL)
+		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
 
 	'''
 	    Parses DIAMOND_OUTPUT_FILE created by diamond blastp
