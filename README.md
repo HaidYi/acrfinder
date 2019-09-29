@@ -73,8 +73,8 @@ AcrFinder needs **.fna**, **.gff** and **.faa** as input. Only **.fna** file as 
 | -n     | --inFNA      | <span style="color:red">Required</span> fna file |
 | -f     | --inGFF     | <span style="color:red">Required</span> Path to gff file to use/parse |
 | -a     | --inFAA     | <span style="color:red">Required</span> Path to faa file to use/parse |
-| -m     | --aaThresh  | Max size of a protein in order to be considered Aca/Acr (aa) {default = 150} [integer] |
-| -d     | --distThresh      | Max intergenic distance between proteins (bp) {default = 250} [integer] |
+| -m     | --aaThresh  | Max size of a protein in order to be considered Aca/Acr (aa) {default = 200} [integer] |
+| -d     | --distThresh      | Max intergenic distance between proteins (bp) {default = 150} [integer] |
 | -r     | --minProteins      | Min number of proteins needed per locus {default = 2} [integer] |
 | -y     | --arrayEvidence      | Minimum evidence level needed of a CRISPR spacer to use {default = 3} [integer] |
 | -o     | --outDir    | Path to output directory to store results in. If not provided, the program will attempt to create a new one with given path |
@@ -233,7 +233,7 @@ docker build -t [tag name] .
 If you don't want to build the image by yourself, AcrFinder is also available at **Docker Hub**. You can pull the AcrFinder from docker hub directly using the command:
 
 ```bash
-docker pull [OPTIONS] haidyi/AcrFinder:latest
+docker pull [OPTIONS] haidyi/acrfinder:latest
 ```
 
 <!-- Runs `CRISPRCasFinder`.
@@ -301,9 +301,12 @@ python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.
 ##### Use own sequence
 If you want to use your own sequence for analysis, you can use the flag `-v` in docker to load your the host directory to the containder. The entire command is like this:
 
+For example, if you want to use GCF_000210795.2 (contain .fna,gff,faa file in the directory ~/GCF_000210795.2) to implement acrfinder algorithm, you can use the command below:
+
 ```bash
-docker run -v [host dir]:[container dir] python3 acr_aca_cri_runner.py -n [loaded .fna file] -f [loaded .gff file] -a [loaded .faa file] -o [output dir] -z B -c 2 -p true -g true
+docker run --rm -it -v ~/GCF_000210795.2:/app/acr_aca_finder/GCF_000210795.2 haidyi/acrfinder:latest python3 acr_aca_cri_runner.py -n GCF_000210795.2/GCF_000210795.2_genomic.fna -f GCF_000210795.2/GCF_000210795.2_genomic.gff -a GCF_000210795.2/GCF_000210795.2_protein.faa -o GCF_000210795.2/output_dir -z B -c 2 -p true -g true
 ```
+Then, you will see the output result in ~/GCF_000210795.2/output_dir.
 
 For more information about how to use docker, you can refer to https://docs.docker.com.
 
