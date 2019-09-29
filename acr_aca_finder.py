@@ -96,13 +96,13 @@ def finalizeLoci(candidateAcrs, uniqueHits, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOM
 		ORGANISM_SUBJECT - object representing ORGANISM_SUBJECT that Acr data is for
 		GCF - ID of the organism being used
 '''
-def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed):
+def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, FNA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed):
 	print('Parsing GFF and FAA file\n...')
 
 	'''
 		Creates organism object using gff and faa files
 	'''
-	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
+	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], FNA_FILE, isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
 	GCF = ORGANISM_SUBJECT.GCF  # obtaions GCF ID that corresponds to subject
 	
 	# print(GCF + '\n')
@@ -356,7 +356,7 @@ def get_options(parser = None, fna_faaNeeded=True):
 	Returns:
 		Nothing
 '''
-def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed):
+def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed):
 	'''
 		Both a valid GFF and FAA file are needed.
 		This will make sure they both exist before commencing.
@@ -392,7 +392,7 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	#acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 
-	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
+	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, FNA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
 	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed)
 
 

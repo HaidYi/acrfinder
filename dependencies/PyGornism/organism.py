@@ -402,7 +402,7 @@ class Organism:
 			countPseudo - BOOLEAN. Whether pseudo genes increment counter keeping track of protein position. DEFAULT = TRUE
 			positionStartsAtZero - BOOLEAN. Whether position of proteins should start at 0. DEFAULT = TRUE
 	'''
-	def __init__(self, organismFile, isProdigalUsed, countPseudo = True, positionStartsAtZero = True, bufferSize = 8192, twoFileParse = False):
+	def __init__(self, organismFile, fnaFile, isProdigalUsed, countPseudo = True, positionStartsAtZero = True, bufferSize = 8192, twoFileParse = False):
 		self.countPseudo, self.positionStartsAtZero, self.bufferSize = countPseudo, positionStartsAtZero, bufferSize
 
 		self.NC_ID_maps_PROTEINS, self.NC_ID_maps_WP_ID = defaultdict(self.empty_list), defaultdict(self.empty_list) 
@@ -413,34 +413,30 @@ class Organism:
 			self.singleFileParse(organismFile)
 
 		else:	# user wants to parse two data files together to get more information than one file can provide
-			self.twoFileParse(organismFile, isProdigalUsed)
+			self.twoFileParse(organismFile, fnaFile, isProdigalUsed)
 		
 
 
 
 
 
-	def singleFileParse(self, organismFile):
-		if organismFile.endswith('.gbff'):
-			self.gbff_read(organismFile, self.bufferSize)
-		elif organismFile.endswith('.gff'):
-			self.gff_read(organismFile, self.bufferSize)
-		else:
-			print('File format not supported')
-			return
+	# def singleFileParse(self, organismFile):
+	# 	if organismFile.endswith('.gbff'):
+	# 		self.gbff_read(organismFile, self.bufferSize)
+	# 	elif organismFile.endswith('.gff'):
+	# 		self.gff_read(organismFile, self.bufferSize)
+	# 	else:
+	# 		print('File format not supported')
+	# 		return
 
-		match = Regex.GCF_REGEX.search(organismFile)
-		if match == None:
-			self.GCF = gffFile.split('.')
-		else:
-			self.GCF = match.group(0)
-
-
-
-		
+	# 	match = Regex.GCF_REGEX.search(organismFile)
+	# 	if match == None:
+	# 		self.GCF = gffFile.split('.')
+	# 	else:
+	# 		self.GCF = match.group(0)
 
 
-	def twoFileParse(self, organismFiles, isProdigalUsed):
+	def twoFileParse(self, organismFiles, fnaFile, isProdigalUsed):
 		if len(organismFiles) < 2:
 			print('Need two files to parse two files...')
 			return
@@ -466,7 +462,7 @@ class Organism:
 		self.gff_read(gffFile, self.bufferSize, isProdigalUsed)
 		self.faa_read(faaFile, self.bufferSize, isProdigalUsed, join = True)
 
-		match = Regex.GCF_REGEX.search(gffFile)
+		match = Regex.GCF_REGEX.search(fnaFile)
 		if match == None:
 			self.GCF = gffFile.split('.')[0].split('/')[-1]
 		else:

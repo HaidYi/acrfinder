@@ -431,8 +431,8 @@ def cleanup_acr_id_files(GCF, OUTPUT_DIR):
 		acr_hit_record - the homolog sequence dict (protein id -> SeqRecord data (defined in Biopython https://biopython-cn.readthedocs.io/zh_CN/latest/cn/chr03.html ) )
 		ACR_INTERMEDIATES_FASTA_FILE - the homolog sequence data (KNOWN-ACR_DATABASE against FAA_FILE)
 '''
-def acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed):
-	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
+def acr_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed):
+	ORGANISM_SUBJECT = Organism([GFF_FILE, FAA_FILE], FNA_FILE, isProdigalUsed, bufferSize = 30720, twoFileParse=True)    # creates Organism object used to parse gff file
 	GCF = ORGANISM_SUBJECT.GCF  # obtaions GCF ID that corresponds to subject
 	
 	acr_hit_record = dict()

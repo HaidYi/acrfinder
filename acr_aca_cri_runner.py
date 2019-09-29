@@ -189,7 +189,7 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 	'''
 		Functionality: 
 	'''
-def acr_aca_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, OUTPUT_DIR, isProdigalUsed):
+def acr_aca_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, OUTPUT_DIR, isProdigalUsed):
 	DIAMOND_DATA_BASE = INTERMEDIATES + GCF + '_acr_diamond_database'
 	DIAMOND_ACR_QUERY = KNOWN_ACR_DATABASE
 	DIAMOND_ACRHOMOLOG_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.txt'
@@ -198,7 +198,7 @@ def acr_aca_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DIS
 	with open(devnull, 'w') as DEV_NULL:
 		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
 
-	_, HOMOLOG_FINAL_RESULT_FILE = acr_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed)
+	_, HOMOLOG_FINAL_RESULT_FILE = acr_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, DIAMOND_ACRHOMOLOG_FILE, OUTPUT_DIR, isProdigalUsed)
 
 	print('\033[31m')  # highlight the homology based method with red color
 	if HOMOLOG_FINAL_RESULT_FILE != None:
@@ -256,17 +256,17 @@ from crispr_cas_runner import crispr_cas_runner as cc_runner
 	If there are CRISPR arrays the program contiunes and will find arrays with an evidence level equal to or greater than EVIDENCE_LEVEL.
 	BLAST_FILE will be null/None when there are no arrays with the wanted evidence level.
 '''
-acr_aca_homolog(FAA_FILE, GFF_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, OUTPUT_DIR, isProdigalUsed)  # No crispr-cas system was found above the given evidence level, terminating...
+acr_aca_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOLD, DISTANCE_THRESHOLD, KNOWN_ACR_DATABASE, INTERMEDIATES, GCF, OUTPUT_DIR, isProdigalUsed)  # No crispr-cas system was found above the given evidence level, terminating...
 if GENOME_TYPE != 'V':
 	BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME = cc_runner(CRISPR_CAS_FINDER_EXECUTABLE, CRISPR_CAS_FINDER_SO, FNA_FILE, OUTPUT_DIR, INTERMEDIATES, GENOME_TYPE, EVIDENCE_LEVEL) # Get crispr spacers and spacers blast hit file
 	if BLAST_FILE == None and CRISPR_NAME_maps_SEQ_NAME == None:
 		print('Acr-Aca finder program was finished using homolog methods, terminating...\n')
 		exit(0)
 	else:
-		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
+		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
 else: # if organism is virus, no need to run CRISPRCas-Finder
-	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
+	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 
 	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
 
