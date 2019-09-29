@@ -1,5 +1,4 @@
 FROM ubuntu:16.04
-MAINTAINER Haidong Yi haidyi@mail.nankai.edu.cn
 
 # Config Software Versions here
 ENV CONDA_VERSION=3-4.6.14
@@ -63,17 +62,17 @@ RUN conda install -y biopython && conda clean -ya
 RUN mkdir -p /app
 
 # Install the acr_aca_finder and CRISPRCas-Finder
-RUN cd /app && git clone https://haidyi:yhd19930426@github.com/haidyi/acr_aca_finder.git
-RUN cd /app/acr_aca_finder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
+RUN cd /app && git clone https://github.com/haidyi/acrfinder.git
+RUN cd /app/acrfinder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
 
 # Config some environmental varialbes for CRISPRCas-Finder
-RUN sed -i '1c #!/usr/bin/env python2' /app/acr_aca_finder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
-  && sed -i '$c export PATH=/app/acr_aca_finder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH' ~/.profile
-ENV MACSY_HOME=/app/acr_aca_finder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/
-ENV PATH=/app/acr_aca_finder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+RUN sed -i '1c #!/usr/bin/env python2' /app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
+  && sed -i '$c export PATH=/app/acrfinder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH' ~/.profile
+ENV MACSY_HOME=/app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/
+ENV PATH=/app/acrfinder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 
 # Set the working directory
-WORKDIR /app/acr_aca_finder
+WORKDIR /app/acrfinder
 
 # CMD
-CMD [ "python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o test_output -c 0 -z B"]
+CMD ["python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o test_output -c 0 -z B -c 2 -p true -g true"]
