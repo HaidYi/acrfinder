@@ -304,7 +304,7 @@ If you want to use your own sequence for analysis, you can use the flag `-v` in 
 For example, if you want to use GCF_000210795.2 (contain .fna,gff,faa file in the directory ~/GCF_000210795.2) to implement acrfinder algorithm, you can use the command below:
 
 ```bash
-docker run --rm -it -v ~/GCF_000210795.2:/app/acr_aca_finder/GCF_000210795.2 haidyi/acrfinder:latest python3 acr_aca_cri_runner.py -n GCF_000210795.2/GCF_000210795.2_genomic.fna -f GCF_000210795.2/GCF_000210795.2_genomic.gff -a GCF_000210795.2/GCF_000210795.2_protein.faa -o GCF_000210795.2/output_dir -z B -c 2 -p true -g true
+docker run --rm -it -v ~/GCF_000210795.2:/app/acrfinder/GCF_000210795.2 haidyi/acrfinder:latest python3 acr_aca_cri_runner.py -n GCF_000210795.2/GCF_000210795.2_genomic.fna -f GCF_000210795.2/GCF_000210795.2_genomic.gff -a GCF_000210795.2/GCF_000210795.2_protein.faa -o GCF_000210795.2/output_dir -z B -c 2 -p true -g true
 ```
 Then, you will see the output result in ~/GCF_000210795.2/output_dir.
 
