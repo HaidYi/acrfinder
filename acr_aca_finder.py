@@ -377,21 +377,7 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 			print('faa file doesn\'t exist')
 			exit(-1)
 
-	# KEEP_INTERMEDIATES = True
-
-	'''
-	Search Acrs with homolog methods: diamond (diamond against the whole faa)
-	'''
-	DIAMOND_DATA_BASE = INTERMEDIATES + GCF + '_acr_diamond_database'
-	DIAMOND_ACR_QUERY = KNOWN_ACR_DATABASE
-	DIAMOND_ACRHOMOLOG_FILE = INTERMEDIATES + GCF + '_acr_homolog_result.txt'
-	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'makedb', '--in', FAA_FILE, '-d', DIAMOND_DATA_BASE], stdout=DEV_NULL)
-	with open(devnull, 'w') as DEV_NULL:
-		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL)
-
 	#acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
-
 	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, FNA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed)
 	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed)
 
