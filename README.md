@@ -277,12 +277,12 @@ Contains methods to obtain all loci one at a time as well as getting the start a
 ## **V. Examples**
 
 ```bash
-python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o output_dir -z B
+python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -f sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.gff -a sample_organisms/GCF_000210795.2/GCF_000210795.2_protein.faa -o [output_dir] -z B -c 2 -p true -g true
 ```
 or you can only use **.fna** file as input.
 
 ```bash
-python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o output_dir -z B
+python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o [output_dir] -z B -c 2 -p true -g true
 ```
 
 #### Run the container
