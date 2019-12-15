@@ -107,9 +107,9 @@ There are three levels of classification in output:
 |*<output_dir>*/CRISPRCas_OUTPUT   | The output folder of CRISPRCasFinder |
 |*<output_dir>*/subjects           | The folder that contains the input files |
 |*<output_dir>*/intermediates      | The folder that contains intermediate result files |
-|*<output_dir>*/blast_out.txt      | Results from blast+ |
-|*<output_dir>*/*<organism_id>*_final_acr_aca.txt | The final set of Acr/Aca regions that passed the initial filters as well as the CDD mobilome and prophage/gi filters. |
-|*<output_dir>*/*<organism_id>*_final_acr_homolog.fasta | The final set of proteins that have similarity to proteins in the Acr database under given similarity threshold. |
+|*<output_dir>*/intermediates/blast_out.txt      | Results from blast+ |
+|*<output_dir>*/*<organism_id>*_guilt-by-association.out | The final set of Acr/Aca regions that passed the initial filters as well as the CDD mobilome and prophage/gi filters. |
+|*<output_dir>*/*<organism_id>*_homology_based.out | The final set of proteins that have similarity to proteins in the Acr database under given similarity threshold. |
 |*<output_dir>*/intermediates/masked_db/ | The directory contains the db (fna with crispr array regions masked) to be used for blastn search for self-targeting spacer matches (the database for blastn search) |
 |*<output_dir>*/intermediates/spacers_with_desired_evidence.fna | The file contains CRISPR spacers extracted from crisprcasfinder results that have the desired evidence level. The query for blastn search |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.txt | Potential Acr/Aca regions that passed initial filters. |
