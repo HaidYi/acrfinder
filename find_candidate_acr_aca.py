@@ -488,15 +488,15 @@ def acr_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOL
 					start = min(startList); end = max(endList)
 
 					for loci_protein in Protein_Maps_Loci[wp]:
-						protein = WP_Maps_Protein[loci_protein]
+						protein = loci_protein
 						output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
 						output += "{}|{}|{}\t".format('-'.join(loci_list), start, end)
-						if loci_protein in acr_hit_record:
-							output += "{}|{}\t".format(acr_hit_record[loci_protein]['acr'], acr_hit_record[loci_protein]['pident'])
+						if loci_protein.id in acr_hit_record:
+							output += "{}|{}\t".format(acr_hit_record[protein.id]['acr'], acr_hit_record[protein.id]['pident'])
 						else:
 							output += "---\t"
 						output += "{}\n".format(protein.sequence)
-						used_wp.add(loci_protein)
+						used_wp.add(protein.id)
 					output += "\n"
 			else:
 				protein = WP_Maps_Protein[wp]
