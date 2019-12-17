@@ -403,6 +403,7 @@ class Organism:
 			positionStartsAtZero - BOOLEAN. Whether position of proteins should start at 0. DEFAULT = TRUE
 	'''
 	def __init__(self, organismFile, fnaFile, isProdigalUsed, countPseudo = True, positionStartsAtZero = True, bufferSize = 8192, twoFileParse = False):
+		positionStartsAtZero = False if isProdigalUsed else True
 		self.countPseudo, self.positionStartsAtZero, self.bufferSize = countPseudo, positionStartsAtZero, bufferSize
 
 		self.NC_ID_maps_PROTEINS, self.NC_ID_maps_WP_ID = defaultdict(self.empty_list), defaultdict(self.empty_list) 
