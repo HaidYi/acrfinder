@@ -217,7 +217,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		for line in handle:
 			cols = line.rstrip().split('\t')
 			if int(cols[3]) > 50 and int(cols[3]) < 200:
-				aca_hit, regionInfo = cols[0], cols[1].split('|')
+				aca_hit, regionInfo, pident = cols[0], cols[1].split('|'), cols[2]
 				start, end = regionInfo[2], regionInfo[3]
 				evalue = float(cols[11])
 
@@ -226,7 +226,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				else:
 					wp = regionInfo[1]
 
-				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': aca_hit, 'start': start, 'end': end, 'evalue': evalue} )
+				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': '|'.join([aca_hit, pident, evalue]), 'start': start, 'end': end, 'evalue': evalue} )
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
