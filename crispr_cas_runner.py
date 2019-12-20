@@ -80,5 +80,5 @@ def crispr_cas_runner(CRISPR_CAS_FINDER_EXECUTABLE: str, CRISPR_CAS_FINDER_SO: s
 		return None, None	# if there were no spacers found then running blastn is impossible
 	MASKED_FNA, CRISPR_NAME_maps_SEQ_NAME = mask_fna(INTERMEDIATES, FNA_FILE, SELECT_SPACER_FASTA)	# creates masked fna file using original FNA and spacers
 
-	return blast_spacers(SELECT_SPACER_FASTA, MASKED_FNA, OUTPUT_DIR), CRISPR_NAME_maps_SEQ_NAME	# returns blast file
+	return blast_spacers(SELECT_SPACER_FASTA, MASKED_FNA, INTERMEDIATES), CRISPR_NAME_maps_SEQ_NAME	# returns blast file
 

@@ -62,7 +62,7 @@ RUN conda install -y biopython && conda clean -ya
 RUN mkdir -p /app
 
 # Install the acr_aca_finder and CRISPRCas-Finder
-RUN cd /app && git clone https://github.com/haidyi/acrfinder.git
+RUN cd /app && git clone -b dev https://github.com/haidyi/acrfinder.git
 RUN cd /app/acrfinder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
 
 # Config some environmental varialbes for CRISPRCas-Finder

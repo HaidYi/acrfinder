@@ -217,7 +217,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 		for line in handle:
 			cols = line.rstrip().split('\t')
 			if int(cols[3]) > 50 and int(cols[3]) < 200:
-				aca_hit, regionInfo = cols[0], cols[1].split('|')
+				aca_hit, regionInfo, pident = cols[0], cols[1].split('|'), cols[2]
 				start, end = regionInfo[2], regionInfo[3]
 				evalue = float(cols[11])
 
@@ -226,7 +226,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				else:
 					wp = regionInfo[1]
 
-				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': aca_hit, 'start': start, 'end': end, 'evalue': evalue} )
+				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': '|'.join([aca_hit, pident, str(evalue)]), 'start': start, 'end': end, 'evalue': evalue} )
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
@@ -475,21 +475,48 @@ def acr_homolog(FAA_FILE, GFF_FILE, FNA_FILE, MIN_PROTEINS_IN_LOCUS, AA_THRESHOL
 										  'protein_id': wp, 'pident': pident, 'acr': acr}
 
 	output = '#GCF\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tGenome_Loci|start|end\tAcr_Hit|pident\tSequence\n'
+	used_wp = set()
 	if len(acr_hit_record) > 0:
 		for wp in acr_hit_record:
-			protein = WP_Maps_Protein[wp]
-			output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
 			if wp in Protein_Maps_Loci:
-				startList = []; endList = []; loci_list = []
-				for loci_protein in Protein_Maps_Loci[wp]:
-					loci_list.append(str(loci_protein.wp))
-					startList.append(loci_protein.start)
-					endList.append(loci_protein.end)
-				start = min(startList); end = max(endList)
-				output += "{}|{}|{}\t{}|{}\t".format('-'.join(loci_list), start, end, acr_hit_record[wp]['acr'], acr_hit_record[wp]['pident'])
+				if wp not in used_wp:
+					startList = []; endList = []; loci_list = []
+					for loci_protein in Protein_Maps_Loci[wp]:
+						loci_list.append(str(loci_protein.wp))
+						startList.append(loci_protein.start)
+						endList.append(loci_protein.end)
+					start = min(startList); end = max(endList)
+
+					for loci_protein in Protein_Maps_Loci[wp]:
+						protein = loci_protein
+						output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
+						output += "{}|{}|{}\t".format('-'.join(loci_list), start, end)
+						if loci_protein.id in acr_hit_record:
+							output += "{}|{}\t".format(acr_hit_record[protein.id]['acr'], acr_hit_record[protein.id]['pident'])
+						else:
+							output += "---\t"
+						output += "{}\n".format(protein.sequence)
+						used_wp.add(protein.id)
+					output += "\n"
 			else:
-				output += "---\t---\t"
-			output += "{}\n".format(protein.sequence)
+				protein = WP_Maps_Protein[wp]
+				output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
+				output += "---\t{}|{}\t".format(acr_hit_record[wp]['acr'], acr_hit_record[wp]['pident'])
+				output += "{}\n\n".format(protein.sequence)
+
+			# protein = WP_Maps_Protein[wp]
+			# output += "{}\t{}\t{}\t{}\t{}\t{}\t{}\t".format(GCF, protein.nc, protein.start, protein.end, protein.strand, protein.wp,  str( int(((protein.end - protein.start + 1) / 3)) ) )
+			# if wp in Protein_Maps_Loci:
+			# 	startList = []; endList = []; loci_list = []
+			# 	for loci_protein in Protein_Maps_Loci[wp]:
+			# 		loci_list.append(str(loci_protein.wp))
+			# 		startList.append(loci_protein.start)
+			# 		endList.append(loci_protein.end)
+			# 	start = min(startList); end = max(endList)
+			# 	output += "{}|{}|{}\t{}|{}\t".format('-'.join(loci_list), start, end, acr_hit_record[wp]['acr'], acr_hit_record[wp]['pident'])
+			# else:
+			# 	output += "---\t---\t"
+			# output += "{}\n".format(protein.sequence)
 
 		with open(HOMOLOGY_FINAL_RESULT_FILE, 'w') as out_handle:
 			out_handle.write(output)
