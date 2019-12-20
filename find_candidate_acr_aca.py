@@ -226,7 +226,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 				else:
 					wp = regionInfo[1]
 
-				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': '|'.join([aca_hit, pident, evalue]), 'start': start, 'end': end, 'evalue': evalue} )
+				WP_ID_maps_Aca_HOMOLOG[wp].append( {'aca_hit': '|'.join([aca_hit, pident, str(evalue)]), 'start': start, 'end': end, 'evalue': evalue} )
 	
 	with open(DIAMOND_ACRHOMOLOG_FILE, 'r', 512) as handle:
 		for line in handle:
