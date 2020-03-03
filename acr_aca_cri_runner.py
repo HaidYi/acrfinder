@@ -67,8 +67,8 @@ def create_gff_faa_with_prodigal(FNA_FILE, DIR, GCF):
 		Nothing
 '''
 
-def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR):
-	BLAST_HIT_SLACK = 5000	# how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence
+def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK):
+	BLAST_HIT_SLACK = BLAST_SLACK	# how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence
 	lookForHigh = False	# whether there is a possibility of a high confidence classifcation
 
 	'''
@@ -227,7 +227,7 @@ define_acr_aca_cri_runner_options(parser)
 options = parser.parse_args()[0]
 FNA_FILE, GENOME_TYPE = parse_master_options(options)
 EVIDENCE_LEVEL = parse_crispr_cas_finder_options(options)
-AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF = aaf_get_options(parser, fna_faaNeeded=False)
+AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF = aaf_get_options(parser, fna_faaNeeded=False)
 isProdigalUsed = False  # Flag whether prodigal is used to generate .gff and .faa files.
 CRISPR_CAS_FINDER_EXECUTABLE, CRISPR_CAS_FINDER_SO, NUM_CPUS = 'dependencies/CRISPRCasFinder/CRISPRCasFinder.pl', 'dependencies/CRISPRCasFinder/sel392v2.so', '4'  # CRISPRCasFinder files
 
@@ -264,9 +264,9 @@ if GENOME_TYPE != 'V':
 		exit(0)
 	else:
 		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
-		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
+		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK)	# classifies Acr/Aca proteins
 else: # if organism is virus, no need to run CRISPRCas-Finder
 	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 
-	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR)	# classifies Acr/Aca proteins
+	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK)	# classifies Acr/Aca proteins
 

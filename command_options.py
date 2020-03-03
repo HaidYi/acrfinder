@@ -94,7 +94,8 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('-r', '--minProteins', action = 'store', dest = 'minProteins', help = 'Minimum number of proteins a locus must have in order to keep as candidate. Default = 2', default = '2')
 	parser.add_option('-t', '--aca', action = 'store', dest = 'acaDB', help = 'Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci', default = 'dependencies/diamond_query/401-aca.faa')
 	parser.add_option('-u', '--acr', action='store', dest='acrDB', help='Known Acr file (.faa) to diamond the homolog of Acr', default = 'dependencies/diamond_query/known-acr.faa')
-	
+	parser.add_option('-bsl', '--blast_slack', action='store', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
+
 	parser.add_option('-f', '--inGFF', action = 'store', dest = 'gff', help = 'input gff file', default = '')
 	parser.add_option('-a', '--inFAA', action = 'store', dest = 'faa', help = 'input faa file', default = '')
 
@@ -265,7 +266,7 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 
 	OUTPUT_DIR = parse_io_options(options)	# gets the output dir
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, GFF_FILE, FAA_FILE
 
 
 

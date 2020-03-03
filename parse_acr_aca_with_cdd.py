@@ -91,7 +91,7 @@ def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_
 		handle.write(neighborsFaaStr)
 
 	from subprocess import call as execute
-	execute(['rpsblast+', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-out', CDD_RESULTS_PATH])
+	execute(['blastp', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-out', CDD_RESULTS_PATH])
 
 	return parse_cdd_results(CDD_RESULTS_PATH, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
 
