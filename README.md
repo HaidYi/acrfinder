@@ -32,7 +32,8 @@ It is a common problem to forget to install `CRISPRCasFinder`, so ensure that `C
 
 `blastn` - <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> will call/use `blastn` to search a genome. Install `blastn` from <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
 
-`psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
+<!-- `psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>. -->
+`blastp` - Used with prophage database to find prophage. Install `blastp` from <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE=Proteins">NCBI</a> 
 
 `python3` - For all scripts with .py extension. Use any version at or above 3.4.
 
@@ -114,8 +115,8 @@ There are three levels of classification in output:
 |*<output_dir>*/intermediates/spacers_with_desired_evidence.fna | The file contains CRISPR spacers extracted from crisprcasfinder results that have the desired evidence level. The query for blastn search |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.txt | Potential Acr/Aca regions that passed initial filters. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa | Potential Acr/Aca regions in an faa format. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used as the query for psiblast+ search against CDD's mobilome models. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_cdd_results.txt | Result file from psiblast+ against CDD's mobilome models. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used as the query for blastp search against prophage. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_cdd_results.txt | Result file from blastp against prophage database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_result.txt | Results of diamond. These are search results with the **Aca database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_homolog_result.txt | Results of diamond. These are search results with the  **Acr database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_database.dmnd | Database of diamond made from *<organism_id>*_candidate_acr_aca.faa file. |

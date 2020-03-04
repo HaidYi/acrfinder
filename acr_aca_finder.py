@@ -180,14 +180,14 @@ def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PRO
 	print('...')
 
 	NEIGHBORHOOD_FAA_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_neighborhood.faa'	# file name for temp FAA file
-	CDD_DB_PATH = 'dependencies/cdds/mge'	# Path to CDD's
-	CDD_RESULTS_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_cdd_results.txt'	# where to put output of psiblast+
+	CDD_DB_PATH = 'dependencies/prophage/prophage'	# Path to prophage's db
+	CDD_RESULTS_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_blastp_results.txt'	# where to put output of blastp
 
 	'''
 		Abstracts CDD processing.
 		Obtains indices of Acr/Aca we can keep.
 	'''
-	neighborhoodsFromCDD, psiblastHitFromCDD = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
+	neighborhoodsFromCDD, blastpHit = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
 
 
 	print("Number of Acr/Aca regions perserved after CDD: {0} out of {1} original loci".format(len(neighborhoodsFromCDD), len(candidateAcrs)))
@@ -196,7 +196,7 @@ def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PRO
 
 	print('Done\n\n')
 
-	return neighborhoodsFromCDD, psiblastHitFromCDD
+	return neighborhoodsFromCDD, blastpHit
 
 
 
