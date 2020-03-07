@@ -94,7 +94,9 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('-r', '--minProteins', action = 'store', dest = 'minProteins', help = 'Minimum number of proteins a locus must have in order to keep as candidate. Default = 2', default = '2')
 	parser.add_option('-t', '--aca', action = 'store', dest = 'acaDB', help = 'Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci', default = 'dependencies/diamond_query/401-aca.faa')
 	parser.add_option('-u', '--acr', action='store', dest='acrDB', help='Known Acr file (.faa) to diamond the homolog of Acr', default = 'dependencies/diamond_query/known-acr.faa')
-	parser.add_option('-bsl', '--blast_slack', action='store', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
+	
+	parser.add_option('-bsl', '--blast_slack', action='store', dset='blast_slack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
+	parser.add_option('-dmd_comp_ss', '--dmd_comp_sensitive', action='store_true', dset='diamond_ss', default=False, help='whether to use sensive mode of diamond.')
 
 	parser.add_option('-f', '--inGFF', action = 'store', dest = 'gff', help = 'input gff file', default = '')
 	parser.add_option('-a', '--inFAA', action = 'store', dest = 'faa', help = 'input faa file', default = '')
@@ -110,8 +112,8 @@ def define_acr_aca_id_options(parser):
 		Nothing
 '''
 def define_cdd_options(parser):
-	parser.add_option('-e', '--proteinUpDown', action = 'store', dest = 'proteinUpDown', help = 'How many proteins upstream and downstream to gather to use with CDD\'s. Default = 5', default = '5')
-	parser.add_option('-c', '--minCDDProteins', action = 'store', dest = 'minCDDProteins', help = 'Minimum number of proteins that should have a CDD match in order to include Acr/Aca locus. Default = 2', default = '2')
+	parser.add_option('-e', '--proteinUpDown', action = 'store', dest = 'proteinUpDown', help = 'How many proteins upstream and downstream to gather to use with CDD\'s. Default = 5', default = '10')
+	parser.add_option('-c', '--minCDDProteins', action = 'store', dest = 'minCDDProteins', help = 'Minimum number of proteins that should have a CDD match in order to include Acr/Aca locus. Default = 2', default = '1')
 
 
 
@@ -241,7 +243,6 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	validate_path(KNOWN_ACA_DATABASE, 'KNOWN ACA DB')	# validates users custom ACA DB
 	validate_path(KNOWN_ACR_DATABASE, 'KNOWN ACR DB') # validates users custom ACR DB
 
-
 	'''
 		Changes threshold for amino acids, intergenic distance and minimum number of proteins for a locus to user specified values.
 	'''
@@ -266,7 +267,10 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 
 	OUTPUT_DIR = parse_io_options(options)	# gets the output dir
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, GFF_FILE, FAA_FILE
+	BLAST_SLACK = options.blast_slack # blast slack paramter
+	DIAMOND_SS = options.diamond_ss # flag whether use sensitive mode
+
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, GFF_FILE, FAA_FILE
 
 
 
