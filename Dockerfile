@@ -74,7 +74,7 @@ RUN cd /app/acrfinder/dependencies/cdd && wget ftp://ftp.ncbi.nih.gov/pub/mmdb/c
 RUN cd /app/acrfinder/dependencies/cdd && makeprofiledb -title CDD.v.3.12 -in Cdd.pn -out Cdd -threshold 9.82 -scale 100.0 -dbtype rps -index true
 
 # make cdd-mge database
-RUN cd /app/acrfinder/dependencies/ && tar -xzf cdd-mge.tar.gz
+RUN cd /app/acrfinder/dependencies/ && tar -xzf cdd-mge.tar.gz && rm cdd-mge.tar.gz
 
 # Config some environmental varialbes for CRISPRCas-Finder
 RUN sed -i '1c #!/usr/bin/env python2' /app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
