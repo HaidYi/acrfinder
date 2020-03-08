@@ -97,7 +97,7 @@ def define_acr_aca_id_options(parser):
 	
 	parser.add_option('--escape_file', action='store', dest='escapeDB', help='', default = 'dependencies/escape_list_HTH_MGE')
 	parser.add_option('--cdd_db', action='store', dest='cddDB', help='', default = 'dependencies/cdd/Cdd')
-	parser.add_option('--blsType', action='store', dest='blastType', choice=['balstp', 'rpsblast'], default='blastp', help='which blast mode to use')
+	parser.add_option('--blsType', action='store', dest='blastType', choices=['blastp', 'rpsblast'], default='blastp', help='which blast mode to use')
 
 	parser.add_option('--blast_slack', action='store', dest='blsSlack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
 	parser.add_option('--dmd_comp_ss', action='store_true', dest='dmdSS', default=False, help='whether to use sensive mode of diamond.')
