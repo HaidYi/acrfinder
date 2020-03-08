@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # Config Software Versions here
 ENV CONDA_VERSION=3-4.6.14
@@ -33,7 +33,7 @@ RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Install diamond environment
-RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.24/diamond-linux64.tar.gz -P /opt \
+RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.26/diamond-linux64.tar.gz -P /opt \
   && cd /opt && tar -xzvf diamond-linux64.tar.gz && chmod +x diamond && rm diamond-linux64.tar.gz diamond_manual.pdf \
   && mv diamond /usr/local/bin
 
@@ -64,6 +64,17 @@ RUN mkdir -p /app
 # Install the acr_aca_finder and CRISPRCas-Finder
 RUN cd /app && git clone -b dev https://github.com/haidyi/acrfinder.git
 RUN cd /app/acrfinder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
+
+# make prophage database
+RUN cd /app/acrfinder/dependencies/prophage
+RUN makeblastdb -in prophage_viurs.db -dbtype prot -out prophage
+
+# make cdd-mge database
+
+# make cdd database
+RUN cd /app/acrfinder/dependencies/ && mkdir -p cdd && cd cdd
+RUN wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz && tar -xzf cdd.tar.gz && rm cdd.tar.gz
+RUN makeprofiledb -title CDD.v.3.12 -in Cdd.pn -out Cdd -threshold 9.82 -scale 100.0 -dbtype rps -index true
 
 # Config some environmental varialbes for CRISPRCas-Finder
 RUN sed -i '1c #!/usr/bin/env python2' /app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
