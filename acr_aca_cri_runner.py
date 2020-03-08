@@ -69,7 +69,7 @@ def generate_filter_file(acr_aca_file, rpsdb_file, INTERMEDIATES):
         handle.write(sequence)
     # run rpsblast here
     rpsblast_file = INTERMEDIATES + 'final_rpsblast.out'
-    execute(['rpsblast', '-query', fasta_file, '-db', rpsdb_file, '-evalue', '.01', '-outfmt', '7', '-out', rpsblast_file])
+    execute(['rpsblast+', '-query', fasta_file, '-db', rpsdb_file, '-evalue', '.001', '-outfmt', '8', '-out', rpsblast_file])
 
     return fasta_file, rpsblast_file
 
