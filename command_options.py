@@ -95,6 +95,9 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('-t', '--aca', action = 'store', dest = 'acaDB', help = 'Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci', default = 'dependencies/diamond_query/401-aca.faa')
 	parser.add_option('-u', '--acr', action='store', dest='acrDB', help='Known Acr file (.faa) to diamond the homolog of Acr', default = 'dependencies/diamond_query/known-acr.faa')
 	
+	parser.add_option('-escape', '--escape_file', action='store', dest='escapeDB', help='', default = 'dependencies/escape_list_HTH_MGE')
+	parser.add_option('-cdd', '--cdd_db', action='store', dest='cddDB', help='', default = 'dependencies/cdd/Cdd')
+
 	parser.add_option('-bsl', '--blast_slack', action='store', dset='blast_slack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
 	parser.add_option('-dmd_comp_ss', '--dmd_comp_sensitive', action='store_true', dset='diamond_ss', default=False, help='whether to use sensive mode of diamond.')
 
@@ -270,7 +273,10 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	BLAST_SLACK = options.blast_slack # blast slack paramter
 	DIAMOND_SS = options.diamond_ss # flag whether use sensitive mode
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, GFF_FILE, FAA_FILE
+	ESCAPE_DBFILE = options.escapeDB # escape file path
+	CDD_DBFILE = options.cddDB # cdd database file path
+
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, GFF_FILE, FAA_FILE
 
 
 

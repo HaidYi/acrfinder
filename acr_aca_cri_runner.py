@@ -50,6 +50,63 @@ def create_gff_faa_with_prodigal(FNA_FILE, DIR, GCF):
 	return GFF_FILE, FAA_FILE
 
 
+def generate_filter_file(acr_aca_file, rpsdb_file, INTERMEDIATES):
+    sequence = ''
+    with open(acr_aca_file, 'r') as acr_file:
+        for locus in getLocus(acr_file):
+            proteins = locus.split('\n')
+
+            if proteins[0].startswith('#'):
+                proteins = proteins[1:len(proteins)]
+
+            for protein in proteins:
+                item_list = protein.split('\t')
+                if item_list[-4] == 'Acr':
+                    sequence += '>'+item_list[6]+'\n'+item_list[-1]+'\n'
+    
+    fasta_file = INTERMEDIATES + 'final_acr.fasta'
+    with open(fasta_file, 'w') as handle:
+        handle.write(sequence)
+    # run rpsblast here
+    rpsblast_file = INTERMEDIATES + 'final_rpsblast.out'
+    execute(['rpsblast', '-query', fasta_file, '-db', rpsdb_file, '-evalue', '.01', '-outfmt', '7', '-out', rpsblast_file])
+
+    return fasta_file, rpsblast_file
+
+'''
+	Functionality:
+		Looks at the result file 
+'''
+def cdd_loci_filter(proteins, escape_set, fasta_file, rpsblast_file):
+	#make rps result set
+	with open(rpsblast_file, "r") as rps:
+		rps_dic={}
+		for line in rps.readlines():
+			line = line.rstrip().split()
+			wp = line[0]
+			cddNUM = line[1].replace("CDD:", "")
+			if wp not in rps_dic.keys():
+				rps_dic.setdefault(wp, [cddNUM])
+			if wp in rps_dic.keys():
+				rps_dic[wp].append(cddNUM)
+	rps_result = set()
+	for key in rps_dic.keys():
+		if any(v for v in rps_dic[key] if v in escape_set) is False:
+			rps_result.add(key)
+
+	# filter the protein using the rpsblast results
+	proteinID_list = []
+	for protein in proteins:
+		item_list = protein.split('\t')
+		if item_list[-4] == 'Acr':
+			proteinID_list.append(item_list[6])
+	if any(v for v in proteinID_list if v in rps_result) is False:
+		return False
+	else:
+		return True
+
+
+
 '''
 	Functionality:
 		Looks at blast result file to create a list of start/end positions (with slack) and the results info (such as array start/end, spacer start/end and CRISPR Cas system).
@@ -67,7 +124,7 @@ def create_gff_faa_with_prodigal(FNA_FILE, DIR, GCF):
 		Nothing
 '''
 
-def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK):
+def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE):
 	BLAST_HIT_SLACK = BLAST_SLACK	# how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence
 	lookForHigh = False	# whether there is a possibility of a high confidence classifcation
 
@@ -111,6 +168,12 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 
 				lookForHigh = True
 
+	fasta_file, rpsblast_file = generate_filter_file(ACR_ACA_FILE, CDD_DBFILE, INTERMEDIATES)
+	# obtain the escape list
+	escape_set = set()
+	for line in open(ESCAPE_DBFILE).readlines():
+		line=line.rstrip()
+		escape_set.add(line)
 
 	with open(ACR_ACA_FILE) as acrFile:
 		newLoci = []
@@ -135,6 +198,10 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 
 
 			locusStart, locusEnd = getLocusStartAndEnd(proteins)	# start and ending position of current Acr/Aca locus
+
+			# add cdd filter there
+			if cdd_loci_filter(proteins, escape_set, fasta_file, rpsblast_file):
+				continue
 
 
 			if lookForHigh:  # if self targeting blast hit
@@ -227,7 +294,7 @@ define_acr_aca_cri_runner_options(parser)
 options = parser.parse_args()[0]
 FNA_FILE, GENOME_TYPE = parse_master_options(options)
 EVIDENCE_LEVEL = parse_crispr_cas_finder_options(options)
-AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF = aaf_get_options(parser, fna_faaNeeded=False)
+AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF = aaf_get_options(parser, fna_faaNeeded=False)
 isProdigalUsed = False  # Flag whether prodigal is used to generate .gff and .faa files.
 CRISPR_CAS_FINDER_EXECUTABLE, CRISPR_CAS_FINDER_SO, NUM_CPUS = 'dependencies/CRISPRCasFinder/CRISPRCasFinder.pl', 'dependencies/CRISPRCasFinder/sel392v2.so', '4'  # CRISPRCasFinder files
 
@@ -264,9 +331,9 @@ if GENOME_TYPE != 'V':
 		exit(0)
 	else:
 		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, DIAMOND_SS, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
-		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK)	# classifies Acr/Aca proteins
+		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE)	# classifies Acr/Aca proteins
 else: # if organism is virus, no need to run CRISPRCas-Finder
 	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, DIAMOND_SS, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 
-	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR, BLAST_SLACK)	# classifies Acr/Aca proteins
+	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE)	# classifies Acr/Aca proteins
 
