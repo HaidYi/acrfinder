@@ -171,23 +171,26 @@ def identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KN
 	Returns:
 		neighborhoodsFromCDD - List of indices that correspond to a locus that has the CDD test.
 '''
-def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed):
+def limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed, BLAST_TYPE):
 	'''
 		Use CDD to parse
 	'''
 	print('Limiting Acr/Aca with CDD (psiblast+) using the following conditions: up/downstream neighbors = {0}, min number of CDD hits per locus to keep = {1}'.format(PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD))
 
 	print('...')
-
+	
 	NEIGHBORHOOD_FAA_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_neighborhood.faa'	# file name for temp FAA file
-	CDD_DB_PATH = 'dependencies/prophage/prophage'	# Path to prophage's db
-	CDD_RESULTS_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_blastp_results.txt'	# where to put output of blastp
-
+	if BLAST_TYPE == 'blastp':
+		CDD_DB_PATH = 'dependencies/prophage/prophage'	# Path to prophage's db
+		CDD_RESULTS_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_blastp_results.txt'	# where to put output of blastp
+	elif BLAST_TYPE == 'rpsblast':
+		CDD_DB_PATH = 'dependencies/cdd-mge/mge'	# Path to cdd-mge's db
+		CDD_RESULTS_PATH = INTERMEDIATES + GCF + '_candidate_acr_aca_rpsblast_results.txt'
 	'''
 		Abstracts CDD processing.
 		Obtains indices of Acr/Aca we can keep.
 	'''
-	neighborhoodsFromCDD, blastpHit = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed)
+	neighborhoodsFromCDD, blastpHit = use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed, BLAST_TYPE)
 
 
 	print("Number of Acr/Aca regions perserved after CDD: {0} out of {1} original loci".format(len(neighborhoodsFromCDD), len(candidateAcrs)))
@@ -301,7 +304,7 @@ def get_options(parser = None, fna_faaNeeded=True):
 
 	options = parser.parse_args()[0]
 
-	AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, GFF_FILE, FAA_FILE = parse_acr_aca_id_options(options, fna_faaNeeded=fna_faaNeeded)
+	AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, GFF_FILE, FAA_FILE = parse_acr_aca_id_options(options, fna_faaNeeded=fna_faaNeeded)
 
 	PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD = parse_cdd_options(options)
 
@@ -342,7 +345,7 @@ def get_options(parser = None, fna_faaNeeded=True):
 	INTERMEDIATES, SUBJECTS_DIR = create_sub_directories(OUTPUT_DIR)  # creates directory to store intermediate files and dir to store organism files that are going to be used through execution
 
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, GFF_FILE, FAA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF
 
 
 
@@ -356,7 +359,7 @@ def get_options(parser = None, fna_faaNeeded=True):
 	Returns:
 		Nothing
 '''
-def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, DIAMOND_SS, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed):
+def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, DIAMOND_SS, BLAST_TYPE, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed):
 	'''
 		Both a valid GFF and FAA file are needed.
 		This will make sure they both exist before commencing.
@@ -379,7 +382,7 @@ def acr_aca_run(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_A
 
 	#acr_hit_record, _ = acr_homolog(FAA_FILE, DIAMOND_ACRHOMOLOG_FILE, INTERMEDIATES, GCF, isProdigalUsed)
 	candidateAcrs, WP_ID_maps_Aca_HOMOLOG, ORGANISM_SUBJECT, GCF, WP_ID_maps_Acr_HOMOLOG = identify_acr_aca(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, GFF_FILE, FAA_FILE, FNA_FILE, INTERMEDIATES, OUTPUT_DIR, isProdigalUsed, DIAMOND_SS)
-	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed)
+	neighborhoodsFromCDD, WP_ID_maps_CDD_META = limit_with_cdd(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, INTERMEDIATES, OUTPUT_DIR, GCF, isProdigalUsed, BLAST_TYPE)
 
 
 	if USE_GI_DB or USE_PAI_DB:
