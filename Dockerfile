@@ -67,7 +67,7 @@ RUN cd /app/acrfinder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU
 
 # make prophage database
 RUN cd /app/acrfinder/dependencies/prophage
-RUN makeblastdb -in prophage_viurs.db -dbtype prot -out prophage
+RUN makeblastdb -in prophage_virus.db -dbtype prot -out prophage
 
 # make cdd-mge database
 
