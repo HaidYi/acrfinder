@@ -99,6 +99,10 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('--cdd_db', action='store', dest='cddDB', help='', default = 'dependencies/cdd/Cdd')
 	parser.add_option('--blsType', action='store', dest='blastType', choices=['blastp', 'rpsblast'], default='blastp', help='which blast mode to use')
 
+	parser.add_option('--identity', action= 'store', type=str, dest='Identity', default=30, help='diamond aca identity')
+	parser.add_option('--coverage', action= 'store', type=str, dest='Coverage', default=0.8, help='diamond aca coverage')
+	parser.add_option('--e_value', action= 'store', type=str, dest='E_Value', default=0.01, help='diamond aca e_value')
+
 	parser.add_option('--blast_slack', action='store', dest='blsSlack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
 	parser.add_option('--no_dmd_ss', action='store_true', dest='nodmdSS', default=False, help='whether to use sensive mode of diamond.')
 
@@ -278,7 +282,12 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	ESCAPE_DBFILE = options.escapeDB # escape file path
 	CDD_DBFILE = options.cddDB # cdd database file path
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, GFF_FILE, FAA_FILE
+	# diamond parameters
+	IDENTITY = options.Identity  # the identity parameters of diamond aca
+	COVERAGE = options.Coverage # the coverage parameter of diamond aca
+	E_VALUE = options.E_Value # the e-value parameter of diamond aca
+
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, GFF_FILE, FAA_FILE
 
 
 
