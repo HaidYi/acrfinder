@@ -288,7 +288,7 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	Returns:
 		output - string representing all Acr loci.
 '''
-def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tAcr/Aca\tCDD MetaData\tAcr_Hit|pident\tSequence\n'):
+def get_acr_loci(candidateAcrs, ORGANISM_SUBJECT, WP_ID_maps_Aca_HOMOLOG, WP_ID_maps_CDD_META, WP_ID_maps_Acr_HOMOLOG, header='#GCF\tPosition\tNC ID\tStart\tEnd\tStrand\tProtein ID\taa Length\tAcr/Aca\tMGE/Prophage MetaData\tAcr_Hit|pident\tSequence\n'):
 	output = header
 	gcf = ORGANISM_SUBJECT.GCF
 
