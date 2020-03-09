@@ -100,7 +100,7 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('--blsType', action='store', dest='blastType', choices=['blastp', 'rpsblast'], default='blastp', help='which blast mode to use')
 
 	parser.add_option('--blast_slack', action='store', dest='blsSlack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
-	parser.add_option('--dmd_comp_ss', action='store_true', dest='dmdSS', default=False, help='whether to use sensive mode of diamond.')
+	parser.add_option('--no_dmd_ss', action='store_true', dest='nodmdSS', default=False, help='whether to use sensive mode of diamond.')
 
 	parser.add_option('-f', '--inGFF', action = 'store', dest = 'gff', help = 'input gff file', default = '')
 	parser.add_option('-a', '--inFAA', action = 'store', dest = 'faa', help = 'input faa file', default = '')
@@ -272,13 +272,13 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	OUTPUT_DIR = parse_io_options(options)	# gets the output dir
 
 	BLAST_SLACK = options.blsSlack # blast slack paramter
-	DIAMOND_SS = options.dmdSS # flag whether use sensitive mode
+	NO_DIAMOND_SS = options.nodmdSS # flag whether use sensitive mode
 	BLAST_TYPE = options.blastType # which blast comp to use, 'blastp' or 'rpsblast+'
 
 	ESCAPE_DBFILE = options.escapeDB # escape file path
 	CDD_DBFILE = options.cddDB # cdd database file path
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, GFF_FILE, FAA_FILE
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, GFF_FILE, FAA_FILE
 
 
 

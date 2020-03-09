@@ -165,7 +165,7 @@ def second_and_third_filter(candidateAcrs, GCF, AA_THRESHOLD = 200, DISTANCE_THR
 		WP_ID_maps_HTH_DOMAIN - dict. Keys are unique protein ID's that had a hit when using hmmscan with HTH DB. The value is the name of the HTH domain.
 		candidateAcrs_filter4 - list of lists holding like strand neighborhoods of Protein objects with the second and third filter applied to it
 '''
-def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed, DIAMOND_SS):
+def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, isProdigalUsed, NO_DIAMOND_SS):
 	'''
 		Creates an faa file of the remaining proteins of organism
 	'''
@@ -201,11 +201,12 @@ def fourth_filter(candidateAcrs, GCF, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OU
 	with open(devnull, 'w') as DEV_NULL:
 		execute(['diamond', 'blastp', '-q', DIAMOND_ACR_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '-f', '6', 
 		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_ACRHOMOLOG_FILE], stdout=DEV_NULL, stderr=subprocess.STDOUT)
-
+	
+	cmd = ['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '30', '--query-cover', '0.8', '-f', '6', 
+		    'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE]
+	
 	with open(devnull, 'w') as DEV_NULL:
-		cmd = ['diamond', 'blastp', '-q', DIAMOND_QUERY, '--db', DIAMOND_DATA_BASE, '-e', '.01', '--id', '30', '--query-cover', '0.8', '-f', '6', 
-		         'qseqid', 'sseqid', 'pident', 'slen', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', '-o', DIAMOND_OUTPUT_FILE]
-		if DIAMOND_SS:
+		if not NO_DIAMOND_SS:
 			cmd.append('--more-sensitive')
 		execute(cmd, stdout=DEV_NULL, stderr=subprocess.STDOUT)
 
