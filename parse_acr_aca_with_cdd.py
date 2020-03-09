@@ -85,14 +85,14 @@ def get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN):
 	Returns:
 		result from parse_cdd_results()
 '''
-def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed, BLAST_TYPE):
+def use_cdd(candidateAcrs, ORGANISM_SUBJECT, NEIGHBORHOOD_FAA_PATH, CDD_RESULTS_PATH, CDD_DB_PATH, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, isProdigalUsed, BLAST_TYPE, THREADS_NUM):
 	with open(NEIGHBORHOOD_FAA_PATH, 'w') as handle:
 		neighborsFaaStr, NEIGHBORHOOD_NUM_maps_NEIGHBORHOOD_WP = get_acr_neighbors(candidateAcrs, ORGANISM_SUBJECT, PROTEIN_UP_DOWN)
 		handle.write(neighborsFaaStr)
 
 	from subprocess import call as execute
 	if BLAST_TYPE == 'blastp':
-		execute(['blastp', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-out', CDD_RESULTS_PATH])
+		execute(['blastp', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-num_threads', THREADS_NUM, '-out', CDD_RESULTS_PATH])
 	elif BLAST_TYPE == 'rpsblast':
 		execute(['rpsblast+', '-query', NEIGHBORHOOD_FAA_PATH, '-db', CDD_DB_PATH, '-evalue', '.01', '-outfmt', '7', '-out', CDD_RESULTS_PATH])
 

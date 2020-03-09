@@ -105,6 +105,7 @@ def define_acr_aca_id_options(parser):
 
 	parser.add_option('--blast_slack', action='store', dest='blsSlack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
 	parser.add_option('--no_dmd_ss', action='store_true', dest='nodmdSS', default=False, help='whether to use sensive mode of diamond.')
+	parser.add_option('--num_threads', action='store', dest='numThreads', default=1, type=str, help='how many threads to be used in blastp')
 
 	parser.add_option('-f', '--inGFF', action = 'store', dest = 'gff', help = 'input gff file', default = '')
 	parser.add_option('-a', '--inFAA', action = 'store', dest = 'faa', help = 'input faa file', default = '')
@@ -287,7 +288,10 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	COVERAGE = options.Coverage # the coverage parameter of diamond aca
 	E_VALUE = options.E_Value # the e-value parameter of diamond aca
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, GFF_FILE, FAA_FILE
+	# number of threads
+	THREADS_NUM = options.numThreads
+
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, THREADS_NUM, GFF_FILE, FAA_FILE
 
 
 
