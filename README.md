@@ -366,7 +366,7 @@ Uses both pathogenicty databases
 
 ## **VI. Workflow of AcrFinder**
 
-<img src="http://bcb.unl.edu/AcrDB/Download/knownAcrAca/web-pipeline.png">
+<img src="http://bcb.unl.edu/AcrFinder/styles/img/help/pipeline.png">
 
 ****
 
