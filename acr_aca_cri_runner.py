@@ -124,7 +124,7 @@ def cdd_loci_filter(proteins, escape_set, fasta_file, rpsblast_file):
 		Nothing
 '''
 
-def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE):
+def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE, GENOME_TYPE):
 	BLAST_HIT_SLACK = BLAST_SLACK	# how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence
 	lookForHigh = False	# whether there is a possibility of a high confidence classifcation
 
@@ -200,7 +200,8 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 			locusStart, locusEnd = getLocusStartAndEnd(proteins)	# start and ending position of current Acr/Aca locus
 
 			# add cdd filter there
-			if cdd_loci_filter(proteins, escape_set, fasta_file, rpsblast_file):
+			is_cddfilter = (GENOME_TYPE != 'V')
+			if is_cddfilter and cdd_loci_filter(proteins, escape_set, fasta_file, rpsblast_file):
 				continue
 
 
@@ -331,9 +332,9 @@ if GENOME_TYPE != 'V':
 		exit(0)
 	else:
 		ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, NO_DIAMOND_SS, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, THREADS_NUM, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
-		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE)	# classifies Acr/Aca proteins
+		classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE, GENOME_TYPE)	# classifies Acr/Aca proteins
 else: # if organism is virus, no need to run CRISPRCas-Finder
 	ACR_ACA_FILE = aa_runner(AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, NO_DIAMOND_SS, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, THREADS_NUM, GFF_FILE, FAA_FILE, FNA_FILE, PROTEIN_UP_DOWN, MIN_NUM_PROTEINS_MATCH_CDD, GI_DB_FILE, PAI_DB_FILE, USE_GI_DB, USE_PAI_DB, DB_STRICT, DB_LAX, INTERMEDIATES, SUBJECTS_DIR, GCF, isProdigalUsed)
 
-	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE)	# classifies Acr/Aca proteins
+	classify_acr_aca(None, None, ACR_ACA_FILE, OUTPUT_DIR, INTERMEDIATES, BLAST_SLACK, ESCAPE_DBFILE, CDD_DBFILE, GENOME_TYPE)	# classifies Acr/Aca proteins
 
