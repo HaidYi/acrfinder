@@ -24,6 +24,8 @@
 
 ## I. Installation / Dependencies
 
+### Dependencies
+
 Clone/download the repository. Some dependencies are included and can be found in the <span style='color:tomato'>dependencies/</span> directory. Program expects these versions and using other versions can result in unexpected behavior.
 
 `CRISPRCasFinder` - Already in <span style='color:tomato'>dependencies/</span> directory. To use `CRISPRCasFinder` on your machine make sure you run its install script. The manual can be found <a href='https://crisprcas.i2bc.paris-saclay.fr/Home/Download'>here</a>. Running the install script will setup paths for all the dependencies of `CRISPRCasFinder`.
@@ -32,11 +34,37 @@ It is a common problem to forget to install `CRISPRCasFinder`, so ensure that `C
 
 `blastn` - <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> will call/use `blastn` to search a genome. Install `blastn` from <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
 
-`psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
+`psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>
+
+`blastp` - Used with prophage database to find prophage. Install `blastp` from <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE=Proteins">NCBI</a> 
 
 `python3` - For all scripts with .py extension. Use any version at or above 3.4.
 
 `PyGornism` - Already in <span style='color:tomato'>dependencies/</span> directory. Used to parse organism files and generate organism files in certain formats.
+
+### Database Preparation
+
+After git clone the repository, there are 3 database to be installed.
+
+#### Prophage
+
+```bash
+cd dependencies/prophage && makeblastdb -in prophage_virus.db -dbtype prot -out prophage
+```
+
+#### CDD-MGE
+
+```bash
+cd dependencies/ && tar -xzf cdd-mge.tar.gz && rm cdd-mge.tar.gz
+```
+
+#### CDD
+
+```bash
+mkdir -p dependencies/cdd
+cd dependencies/cdd && wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz && tar -xzf cdd.tar.gz && rm cdd.tar.gz
+makeprofiledb -title CDD.v.3.12 -in Cdd.pn -out Cdd -threshold 9.82 -scale 100.0 -dbtype rps -index true
+```
 
 ****
 
@@ -80,13 +108,18 @@ AcrFinder needs **.fna**, **.gff** and **.faa** as input. Only **.fna** file as 
 | -o     | --outDir    | Path to output directory to store results in. If not provided, the program will attempt to create a new one with given path |
 | -t     | --aca    | Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci |
 | -u     | --acr    | Known Acr file (.faa) to diamond the homolog of Acr |
-| -z     | --genomeType      | How to treat the genome. There are three options: **V**irus, **B**acteria and **A**rchaea. Viruses will not run `CRISPRCasFinder`, Archaea will run `CRISPRCasFinder` with a special Archaea flag (-ArchaCas), Bacteria will use `CRISPRCasFinder` without the Archaea flag {default = V} [string] |
-| -e     | --proteinUpDown | Number of surrounding (up- and down-stream) proteins to use when gathering a neighborhood {default = 5} [integer] |
-| -c     | --minCDDProteins | Minimum number of proteins in neighborhood that must have a CDD mobilome hit so the Acr/Aca locus can be attributed to a CDD hit {default = 2} [integer] |
+| -z     | --genomeType      | How to treat the genome. There are three options: **V**irus, **B**acteria and **A**rchaea. Viruses will not run `CRISPRCasFinder` (Note: when virus is checked, also check `-c 0` such that **no mge search** for virus.), Archaea will run `CRISPRCasFinder` with a special Archaea flag (-ArchaCas), Bacteria will use `CRISPRCasFinder` without the Archaea flag {default = V} [string] |
+| -e     | --proteinUpDown | Number of surrounding (up- and down-stream) proteins to use when gathering a neighborhood {default = 10} [integer] |
+| -c     | --minCDDProteins | Minimum number of proteins in neighborhood that must have a CDD mobilome hit so the Acr/Aca locus can be attributed to a CDD hit {default = 1} [integer] |
 | -g     | --gi        | Uses IslandViewer (GI) database. {default = false} [boolean] |
 | -p     | --prophage       |  Uses PHASTER (prophage) database. {default = false} [boolean] |
 | -s     | --strict    | All proteins in locus must lie within a region found in DB(s) being used {default = false} [boolean] |
 | -l     | --lax       | Only one protein must lie within a region found in DB(s) being used {default = true} [boolean] |
+| --blsType | None | Which blast type to choose when searching mobile genome element (mge). {default = blastp} Possible choices: blastp or rpsblast |
+| --identity | None | The --id (identity) parameter for diamond to search {default=30} [integer] |
+| --coverage | None | The --query-cover parameter for diamond to search {default=0.8} [float] |
+| --e_value  | None | The -e (e-value) parameter for diamond to search {default=0.01} [float] |
+| --blast_slack | None | how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence {default=5000} |
 
 #### Output 
 
@@ -114,8 +147,8 @@ There are three levels of classification in output:
 |*<output_dir>*/intermediates/spacers_with_desired_evidence.fna | The file contains CRISPR spacers extracted from crisprcasfinder results that have the desired evidence level. The query for blastn search |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.txt | Potential Acr/Aca regions that passed initial filters. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa | Potential Acr/Aca regions in an faa format. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used as the query for psiblast+ search against CDD's mobilome models. |
-|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_cdd_results.txt | Result file from psiblast+ against CDD's mobilome models. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_neighborhood.faa | An extension of the previous file that also inludes the neighboring proteins of the potential Acr/Aca. Used as the query for blastp search against prophage. |
+|*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_{blastp/rpsblast}_results.txt | Result file from blastp against prophage database or rpsblast against cdd-mge database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_result.txt | Results of diamond. These are search results with the **Aca database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_homolog_result.txt | Results of diamond. These are search results with the  **Acr database** as the query and *<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca.faa as the database. |
 |*<output_dir>*/intermediates/*<organism_id>*_candidate_acr_aca_diamond_database.dmnd | Database of diamond made from *<organism_id>*_candidate_acr_aca.faa file. |

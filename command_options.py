@@ -95,6 +95,18 @@ def define_acr_aca_id_options(parser):
 	parser.add_option('-t', '--aca', action = 'store', dest = 'acaDB', help = 'Known Aca file (.faa) to diamond candidate aca in candidate Acr-Aca loci', default = 'dependencies/diamond_query/401-aca.faa')
 	parser.add_option('-u', '--acr', action='store', dest='acrDB', help='Known Acr file (.faa) to diamond the homolog of Acr', default = 'dependencies/diamond_query/known-acr.faa')
 	
+	parser.add_option('--escape_file', action='store', dest='escapeDB', help='', default = 'dependencies/escape_list_HTH_MGE')
+	parser.add_option('--cdd_db', action='store', dest='cddDB', help='', default = 'dependencies/cdd/Cdd')
+	parser.add_option('--blsType', action='store', dest='blastType', choices=['blastp', 'rpsblast'], default='blastp', help='which blast mode to use')
+
+	parser.add_option('--identity', action= 'store', type=str, dest='Identity', default='30', help='diamond aca identity')
+	parser.add_option('--coverage', action= 'store', type=str, dest='Coverage', default='0.8', help='diamond aca coverage')
+	parser.add_option('--e_value', action= 'store', type=str, dest='E_Value', default='0.01', help='diamond aca e_value')
+
+	parser.add_option('--blast_slack', action='store', dest='blsSlack', default=5000, type=int, help='how far an Acr/Aca locus is allowed to be from a blastn hit to be considered high confidence')
+	parser.add_option('--no_dmd_ss', action='store_true', dest='nodmdSS', default=False, help='whether to use sensive mode of diamond.')
+	parser.add_option('--num_threads', action='store', dest='numThreads', default='1', type=str, help='how many threads to be used in blastp')
+
 	parser.add_option('-f', '--inGFF', action = 'store', dest = 'gff', help = 'input gff file', default = '')
 	parser.add_option('-a', '--inFAA', action = 'store', dest = 'faa', help = 'input faa file', default = '')
 
@@ -109,8 +121,8 @@ def define_acr_aca_id_options(parser):
 		Nothing
 '''
 def define_cdd_options(parser):
-	parser.add_option('-e', '--proteinUpDown', action = 'store', dest = 'proteinUpDown', help = 'How many proteins upstream and downstream to gather to use with CDD\'s. Default = 5', default = '5')
-	parser.add_option('-c', '--minCDDProteins', action = 'store', dest = 'minCDDProteins', help = 'Minimum number of proteins that should have a CDD match in order to include Acr/Aca locus. Default = 2', default = '2')
+	parser.add_option('-e', '--proteinUpDown', action = 'store', dest = 'proteinUpDown', help = 'How many proteins upstream and downstream to gather to use with CDD\'s. Default = 5', default = '10')
+	parser.add_option('-c', '--minCDDProteins', action = 'store', dest = 'minCDDProteins', help = 'Minimum number of proteins that should have a CDD match in order to include Acr/Aca locus. Default = 2', default = '1')
 
 
 
@@ -240,7 +252,6 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 	validate_path(KNOWN_ACA_DATABASE, 'KNOWN ACA DB')	# validates users custom ACA DB
 	validate_path(KNOWN_ACR_DATABASE, 'KNOWN ACR DB') # validates users custom ACR DB
 
-
 	'''
 		Changes threshold for amino acids, intergenic distance and minimum number of proteins for a locus to user specified values.
 	'''
@@ -265,7 +276,22 @@ def parse_acr_aca_id_options(options, fna_faaNeeded=True):
 
 	OUTPUT_DIR = parse_io_options(options)	# gets the output dir
 
-	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, GFF_FILE, FAA_FILE
+	BLAST_SLACK = options.blsSlack # blast slack paramter
+	NO_DIAMOND_SS = options.nodmdSS # flag whether use sensitive mode
+	BLAST_TYPE = options.blastType # which blast comp to use, 'blastp' or 'rpsblast+'
+
+	ESCAPE_DBFILE = options.escapeDB # escape file path
+	CDD_DBFILE = options.cddDB # cdd database file path
+
+	# diamond parameters
+	IDENTITY = options.Identity  # the identity parameters of diamond aca
+	COVERAGE = options.Coverage # the coverage parameter of diamond aca
+	E_VALUE = options.E_Value # the e-value parameter of diamond aca
+
+	# number of threads
+	THREADS_NUM = options.numThreads
+
+	return AA_THRESHOLD, DISTANCE_THRESHOLD, MIN_PROTEINS_IN_LOCUS, KNOWN_ACA_DATABASE, KNOWN_ACR_DATABASE, OUTPUT_DIR, BLAST_SLACK, NO_DIAMOND_SS, ESCAPE_DBFILE, CDD_DBFILE, BLAST_TYPE, IDENTITY, COVERAGE, E_VALUE, THREADS_NUM, GFF_FILE, FAA_FILE
 
 
 
