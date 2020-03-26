@@ -164,7 +164,7 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 				target_nc = 'Target Accession={0}'.format(target_accession)
 				target_pos = 'Target_Pos={0}-{1}'.format(hitStart, hitEnd)
 
-				START_END_maps_BLAST_HIT[hitStart + '-' + hitEnd + '-' + target_accession].append('|'.join([spacer_nc, spacer_pos, cas_type, target_nc, target_pos]))
+				START_END_maps_BLAST_HIT[(hitStart, hitEnd, target_accession)].append('|'.join([spacer_nc, spacer_pos, cas_type, target_nc, target_pos]))
 
 				lookForHigh = True
 
@@ -207,7 +207,8 @@ def classify_acr_aca(BLAST_FILE, CRISPR_NAME_maps_SEQ_NAME, ACR_ACA_FILE, OUTPUT
 
 			if lookForHigh:  # if self targeting blast hit
 				for startEnd in START_END_maps_BLAST_HIT.keys():
-					blastHitStart, blastHitEnd, target_accession = startEnd.split('-')
+					# blastHitStart, blastHitEnd, target_accession = startEnd.split('-')
+					blastHitStart, blastHitEnd, target_accession = startEnd
 					blastHitStart, blastHitEnd = int(blastHitStart), int(blastHitEnd)	# start/end position +/- slack of current blast hit info
 					blastHitStart, blastHitEnd = blastHitEnd - BLAST_HIT_SLACK, blastHitStart + BLAST_HIT_SLACK
 
