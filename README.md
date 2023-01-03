@@ -255,7 +255,7 @@ If using pathogenic databases (strict): locus 3 and 4 are chosen -->
 
 ## **IV. <span style='color:RebeccaPurple'>Docker Support</span>**
 
-To help users to configure the environment to use the software easily, we provide the _.Dockerfile_ can be used using the command:
+To help users to configure the environment to use the software easily, we provide the _.Dockerfile_ can be used using the command (`[tag name]` indicates the name of the tag. You can set any tag name.):
 
 ```bash
 git clone https://github.com/haidyi/acrfinder.git
