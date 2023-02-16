@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 # Config Software Versions here
-ENV CONDA_VERSION=3-4.6.14
+ENV CONDA_VERSION=4.6.14
 ENV PYTHON3_VERSION=3.6.5
 
 # Install some basic utilities
@@ -21,7 +21,6 @@ RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
     hmmer \
     emboss \
     emboss-lib \
-    ncbi-blast+ \
     bioperl \
     bioperl-run \
     libdatetime-perl \
@@ -32,13 +31,18 @@ RUN apt-get clean && apt-get update --fix-missing && apt-get install -y \
     prodigal \
   && rm -rf /var/lib/apt/lists/*
 
+#Install the latest version of BLAST
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.13.0+-x64-linux.tar.gz -P /opt \
+  && cd /opt && tar -xzvf ncbi-blast-2.13.0+-x64-linux.tar.gz && chmod -R +x ./ncbi-blast-2.13.0+/bin && rm ncbi-blast-2.13.0+-x64-linux.tar.gz \
+  && mv ./ncbi-blast-2.13.0+/bin/* /usr/local/bin
+
 # Install diamond environment
 RUN wget http://github.com/bbuchfink/diamond/releases/download/v0.9.26/diamond-linux64.tar.gz -P /opt \
   && cd /opt && tar -xzvf diamond-linux64.tar.gz && chmod +x diamond && rm diamond-linux64.tar.gz diamond_manual.pdf \
   && mv diamond /usr/local/bin
 
 # Install Miniconda
-RUN curl -so /opt/miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA_VERSION}-Linux-x86_64.sh \
+RUN curl -so /opt/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh \
   && chmod +x /opt/miniconda.sh \
   && /opt/miniconda.sh -b -p /opt/miniconda \
   && rm /opt/miniconda.sh
@@ -62,16 +66,12 @@ RUN conda install -y biopython && conda clean -ya
 RUN mkdir -p /app
 
 # Install the acr_aca_finder and CRISPRCas-Finder
-RUN cd /app && git clone https://github.com/haidyi/acrfinder.git
+RUN cd /app && git clone https://github.com/DininduSenanayake/acrfinder.git
 RUN cd /app/acrfinder/dependencies/CRISPRCasFinder/ && chmod +x installer_UBUNTU.sh && ./installer_UBUNTU.sh
 
 # make prophage database
 RUN cd /app/acrfinder/dependencies/prophage && makeblastdb -in prophage_virus.db -dbtype prot -out prophage
 
-# make cdd database
-RUN mkdir -p /app/acrfinder/dependencies/cdd
-RUN cd /app/acrfinder/dependencies/cdd && wget ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz && tar -xzf cdd.tar.gz && rm cdd.tar.gz
-RUN cd /app/acrfinder/dependencies/cdd && makeprofiledb -title CDD.v.3.12 -in Cdd.pn -out Cdd -threshold 9.82 -scale 100.0 -dbtype rps -index true
 
 # make cdd-mge database
 RUN cd /app/acrfinder/dependencies/ && tar -xzf cdd-mge.tar.gz && rm cdd-mge.tar.gz
@@ -87,3 +87,4 @@ WORKDIR /app/acrfinder
 
 # CMD
 CMD ["python3 acr_aca_cri_runner.py -n sample_organisms/GCF_000210795.2/GCF_000210795.2_genomic.fna -o test_output -c 0 -z B -c 2 -p true -g true"]
+
