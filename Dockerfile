@@ -77,9 +77,9 @@ RUN cd /app/acrfinder/dependencies/cdd && makeprofiledb -title CDD.v.3.12 -in Cd
 RUN cd /app/acrfinder/dependencies/ && tar -xzf cdd-mge.tar.gz && rm cdd-mge.tar.gz
 
 # Config some environmental varialbes for CRISPRCas-Finder
-RUN sed -i '1c #!/usr/bin/env python2' /app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/bin/macsyfinder \
+RUN sed -i '1c #!/usr/bin/env python2' /app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-macsyfinder-1.0.5/bin/macsyfinder \
   && sed -i '$c export PATH=/app/acrfinder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH' ~/.profile
-ENV MACSY_HOME=/app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-1.0.5/
+ENV MACSY_HOME=/app/acrfinder/dependencies/CRISPRCasFinder/macsyfinder-macsyfinder-1.0.5/
 ENV PATH=/app/acrfinder/dependencies/CRISPRCasFinder/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 
 # Set the working directory
