@@ -1,3 +1,5 @@
+
+
 **<center>AcrFinder</center>**
 
 <center>(c) <a href='http://bcb.unl.edu'>Yin Lab</a>@<a href='https://www.unl.edu'>UNL</a>2019</center>
@@ -34,7 +36,7 @@ It is a common problem to forget to install `CRISPRCasFinder`, so ensure that `C
 
 `blastn` - <span style='color:RebeccaPurple'>acr_aca_cri_runner.py</span> will call/use `blastn` to search a genome. Install `blastn` from <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>.
 
-`psiblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>
+`rpsblast+` - Used with CDD to find mobilome proteins. Install at <a href='https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download'>NCBI</a>
 
 `blastp` - Used with prophage database to find prophage. Install `blastp` from <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE=Proteins">NCBI</a> 
 
@@ -356,7 +358,7 @@ Uses both pathogenicty databases
 **Doesn't have CRISPR Cas system**
 
 ```bash
-./acr_aca_cri_runner.py -n sample_organisms/ncbi_sequences/GCF_000006175.1.fna -a sample_organisms/ncbi_sequences/GCF_000006175.1.faa -f sample_organisms/ncbi_sequences/GCF_000006175.1.gff  -o output_dir
+./acr_aca_cri_runner.py -n sample_organisms/ncbi_sequences/GCF_900006175.1.fna -a sample_organisms/ncbi_sequences/GCF_900006175.1.faa -f sample_organisms/ncbi_sequences/GCF_900006175.1.gff  -o output_dir
 ```
 ****
 
@@ -397,4 +399,3 @@ needle (from emboss) is...............OK
 A) There were no CRISPR Cas systems found within the same NCID/sequence. The program will not try to find Acr/Aca proteins in an organism that has no CRISPR Cas systems in the same NCID/sequence.
 
 You can run <span style='color:RebeccaPurple'>acr_aca_finder.py</span> to just execute the Acr/Aca identification with no restrictions due to CRISPR Cas systems. -->
-
